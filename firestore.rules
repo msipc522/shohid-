@@ -1,0 +1,259 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Global default-deny safety net
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // ==================== GLOBAL PRIMITIVES ====================
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isVerified() {
+      return isSignedIn() && request.auth.token.email_verified == true;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() >= 1 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function isOwner(userId) {
+      return isVerified() && request.auth.uid == userId;
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    // ==================== VALIDATION BLUEPRINTS ====================
+    function isValidUserSettings(data, userId) {
+      return data.keys().hasAll(['ownerUid', 'houseName', 'houseAddress', 'unitRate', 'initialized', 'createdAt', 'updatedAt'])
+        && data.keys().hasOnly(['ownerUid', 'email', 'displayName', 'houseName', 'houseAddress', 'unitRate', 'initialized', 'createdAt', 'updatedAt'])
+        && data.ownerUid is string && data.ownerUid == userId && isValidId(data.ownerUid)
+        && (!('email' in data) || (data.email is string && data.email.size() <= 254))
+        && (!('displayName' in data) || (data.displayName is string && data.displayName.size() <= 120))
+        && data.houseName is string && data.houseName.size() >= 1 && data.houseName.size() <= 120
+        && data.houseAddress is string && data.houseAddress.size() <= 240
+        && (data.unitRate is int || data.unitRate is float) && data.unitRate >= 0 && data.unitRate <= 500
+        && data.initialized is bool
+        && data.createdAt is timestamp
+        && data.updatedAt is timestamp;
+    }
+
+    function isValidUnit(data, userId, unitId) {
+      return data.keys().hasAll(['id', 'ownerUid', 'type', 'name', 'floor', 'defaultRent', 'sortOrder', 'createdAt', 'updatedAt'])
+        && data.keys().hasOnly(['id', 'ownerUid', 'type', 'name', 'floor', 'defaultRent', 'sortOrder', 'createdAt', 'updatedAt'])
+        && data.id is string && data.id == unitId && isValidId(data.id)
+        && data.ownerUid is string && data.ownerUid == userId && isValidId(data.ownerUid)
+        && data.type in ['room', 'shop', 'family']
+        && data.name is string && data.name.size() >= 1 && data.name.size() <= 80
+        && data.floor is string && data.floor.size() <= 80
+        && (data.defaultRent is int || data.defaultRent is float) && data.defaultRent >= 0 && data.defaultRent <= 10000000
+        && (data.sortOrder is int || data.sortOrder is float) && data.sortOrder >= 0 && data.sortOrder <= 10000
+        && data.createdAt is timestamp
+        && data.updatedAt is timestamp;
+    }
+
+    function isValidStringList(arr, maxItems, maxItemLen) {
+      return arr is list
+        && arr.size() <= maxItems
+        && (arr.size() == 0 || (arr[0] is string && arr[0].size() <= maxItemLen));
+    }
+
+    function isValidExtraDocItem(item) {
+      return item is map
+        && item.keys().hasAll(['label', 'img'])
+        && item.keys().hasOnly(['label', 'img'])
+        && item.label is string && item.label.size() <= 100
+        && item.img is string && item.img.size() <= 220000;
+    }
+
+    function isValidExtraDocs(arr) {
+      return arr is list
+        && arr.size() <= 4
+        && (arr.size() == 0 || isValidExtraDocItem(arr[0]));
+    }
+
+    function isValidTenant(data, userId, tenantId) {
+      return data.keys().hasAll([
+          'id', 'ownerUid', 'unitId', 'name', 'occupation', 'phone', 'familyPhone',
+          'homeAddress', 'rent', 'advance', 'inDate', 'outDate', 'initialMeter',
+          'nidNumber', 'familyStandard', 'familyCustom', 'passportImg',
+          'nidFrontImg', 'nidBackImg', 'officeIdImg', 'extraDocs', 'createdAt', 'updatedAt'
+        ])
+        && data.keys().hasOnly([
+          'id', 'ownerUid', 'unitId', 'name', 'occupation', 'phone', 'familyPhone',
+          'homeAddress', 'rent', 'advance', 'inDate', 'outDate', 'initialMeter',
+          'nidNumber', 'familyStandard', 'familyCustom', 'passportImg',
+          'nidFrontImg', 'nidBackImg', 'officeIdImg', 'extraDocs', 'createdAt', 'updatedAt'
+        ])
+        && data.id is string && data.id == tenantId && isValidId(data.id)
+        && data.ownerUid is string && data.ownerUid == userId && isValidId(data.ownerUid)
+        && isValidId(data.unitId)
+        && data.name is string && data.name.size() >= 1 && data.name.size() <= 120
+        && data.occupation is string && data.occupation.size() <= 120
+        && data.phone is string && data.phone.size() >= 1 && data.phone.size() <= 40
+        && data.familyPhone is string && data.familyPhone.size() <= 40
+        && data.homeAddress is string && data.homeAddress.size() <= 300
+        && (data.rent is int || data.rent is float) && data.rent >= 0 && data.rent <= 10000000
+        && (data.advance is int || data.advance is float) && data.advance >= 0 && data.advance <= 50000000
+        && data.inDate is string && data.inDate.size() <= 20
+        && data.outDate is string && data.outDate.size() <= 20
+        && (data.initialMeter is int || data.initialMeter is float) && data.initialMeter >= 0 && data.initialMeter <= 10000000
+        && data.nidNumber is string && data.nidNumber.size() <= 40
+        && isValidStringList(data.familyStandard, 10, 80)
+        && isValidStringList(data.familyCustom, 15, 80)
+        && data.passportImg is string && data.passportImg.size() <= 160000
+        && data.nidFrontImg is string && data.nidFrontImg.size() <= 220000
+        && data.nidBackImg is string && data.nidBackImg.size() <= 220000
+        && data.officeIdImg is string && data.officeIdImg.size() <= 220000
+        && isValidExtraDocs(data.extraDocs)
+        && data.createdAt is timestamp
+        && data.updatedAt is timestamp;
+    }
+
+    function isValidBill(data, userId, billId) {
+      return data.keys().hasAll([
+          'id', 'ownerUid', 'unitId', 'tenantId', 'month', 'prevReading', 'currReading',
+          'unitRate', 'consumedUnits', 'baseRent', 'elecBill', 'otherCharge', 'prevDue',
+          'totalPayable', 'paidAmount', 'dueAmount', 'payMethod', 'payDate', 'createdAt', 'updatedAt'
+        ])
+        && data.keys().hasOnly([
+          'id', 'ownerUid', 'unitId', 'tenantId', 'month', 'prevReading', 'currReading',
+          'unitRate', 'consumedUnits', 'baseRent', 'elecBill', 'otherCharge', 'prevDue',
+          'totalPayable', 'paidAmount', 'dueAmount', 'payMethod', 'payDate', 'createdAt', 'updatedAt'
+        ])
+        && data.id is string && data.id == billId && isValidId(data.id)
+        && data.ownerUid is string && data.ownerUid == userId && isValidId(data.ownerUid)
+        && isValidId(data.unitId)
+        && data.tenantId is string && data.tenantId.size() <= 128
+        && data.month is string && data.month.size() <= 10 && data.month.matches('^\\d{4}-\\d{2}$')
+        && (data.prevReading is int || data.prevReading is float) && data.prevReading >= 0
+        && (data.currReading is int || data.currReading is float) && data.currReading >= data.prevReading
+        && (data.unitRate is int || data.unitRate is float) && data.unitRate >= 0 && data.unitRate <= 500
+        && (data.consumedUnits is int || data.consumedUnits is float) && data.consumedUnits >= 0
+        && (data.baseRent is int || data.baseRent is float) && data.baseRent >= 0
+        && (data.elecBill is int || data.elecBill is float) && data.elecBill >= 0
+        && (data.otherCharge is int || data.otherCharge is float) && data.otherCharge >= 0
+        && (data.prevDue is int || data.prevDue is float) && data.prevDue >= 0
+        && (data.totalPayable is int || data.totalPayable is float) && data.totalPayable >= 0
+        && (data.paidAmount is int || data.paidAmount is float) && data.paidAmount >= 0
+        && (data.dueAmount is int || data.dueAmount is float) && data.dueAmount >= 0
+        && data.payMethod in ['Cash', 'bKash', 'Nagad', 'Bank']
+        && data.payDate is string && data.payDate.size() <= 20
+        && data.createdAt is timestamp
+        && data.updatedAt is timestamp;
+    }
+
+    // ==================== COLLECTION RULES ====================
+    match /users/{userId} {
+      allow get: if isValidId(userId) && isOwner(userId);
+      allow list: if isVerified() && resource.data.ownerUid == request.auth.uid;
+
+      allow create: if isValidId(userId)
+        && isOwner(userId)
+        && isValidUserSettings(incoming(), userId)
+        && incoming().createdAt == request.time
+        && incoming().updatedAt == request.time;
+
+      allow update: if isValidId(userId)
+        && isOwner(userId)
+        && isValidUserSettings(incoming(), userId)
+        && incoming().ownerUid == existing().ownerUid
+        && incoming().createdAt == existing().createdAt
+        && incoming().updatedAt == request.time
+        && incoming().diff(existing()).affectedKeys().hasOnly(['houseName', 'houseAddress', 'unitRate', 'initialized', 'email', 'displayName', 'updatedAt']);
+
+      allow delete: if false;
+
+      // 28 Rooms + 2 Shops
+      match /units/{unitId} {
+        allow get: if isValidId(userId) && isValidId(unitId) && isOwner(userId);
+        allow list: if isValidId(userId) && isOwner(userId) && resource.data.ownerUid == request.auth.uid;
+
+        allow create: if isValidId(userId) && isValidId(unitId)
+          && isOwner(userId)
+          && isValidUnit(incoming(), userId, unitId)
+          && incoming().createdAt == request.time
+          && incoming().updatedAt == request.time;
+
+        allow update: if isValidId(userId) && isValidId(unitId)
+          && isOwner(userId)
+          && isValidUnit(incoming(), userId, unitId)
+          && incoming().id == existing().id
+          && incoming().ownerUid == existing().ownerUid
+          && incoming().createdAt == existing().createdAt
+          && incoming().updatedAt == request.time
+          && incoming().diff(existing()).affectedKeys().hasOnly(['name', 'floor', 'defaultRent', 'type', 'sortOrder', 'updatedAt']);
+
+        allow delete: if isValidId(userId) && isValidId(unitId) && isOwner(userId);
+      }
+
+      // Active & Historical Tenants
+      match /tenants/{tenantId} {
+        allow get: if isValidId(userId) && isValidId(tenantId) && isOwner(userId);
+        allow list: if isValidId(userId) && isOwner(userId) && resource.data.ownerUid == request.auth.uid;
+
+        allow create: if isValidId(userId) && isValidId(tenantId)
+          && isOwner(userId)
+          && isValidTenant(incoming(), userId, tenantId)
+          && incoming().createdAt == request.time
+          && incoming().updatedAt == request.time
+          && exists(/databases/$(database)/documents/users/$(userId)/units/$(incoming().unitId));
+
+        allow update: if isValidId(userId) && isValidId(tenantId)
+          && isOwner(userId)
+          && isValidTenant(incoming(), userId, tenantId)
+          && incoming().id == existing().id
+          && incoming().ownerUid == existing().ownerUid
+          && incoming().createdAt == existing().createdAt
+          && incoming().updatedAt == request.time
+          && exists(/databases/$(database)/documents/users/$(userId)/units/$(incoming().unitId))
+          && incoming().diff(existing()).affectedKeys().hasOnly([
+            'unitId', 'name', 'occupation', 'phone', 'familyPhone', 'homeAddress',
+            'rent', 'advance', 'inDate', 'outDate', 'initialMeter', 'nidNumber',
+            'familyStandard', 'familyCustom', 'passportImg', 'nidFrontImg',
+            'nidBackImg', 'officeIdImg', 'extraDocs', 'updatedAt'
+          ]);
+
+        allow delete: if isValidId(userId) && isValidId(tenantId) && isOwner(userId);
+      }
+
+      // Monthly Rent & Electricity Bills
+      match /bills/{billId} {
+        allow get: if isValidId(userId) && isValidId(billId) && isOwner(userId);
+        allow list: if isValidId(userId) && isOwner(userId) && resource.data.ownerUid == request.auth.uid;
+
+        allow create: if isValidId(userId) && isValidId(billId)
+          && isOwner(userId)
+          && isValidBill(incoming(), userId, billId)
+          && incoming().createdAt == request.time
+          && incoming().updatedAt == request.time
+          && exists(/databases/$(database)/documents/users/$(userId)/units/$(incoming().unitId));
+
+        allow update: if isValidId(userId) && isValidId(billId)
+          && isOwner(userId)
+          && isValidBill(incoming(), userId, billId)
+          && incoming().id == existing().id
+          && incoming().ownerUid == existing().ownerUid
+          && incoming().createdAt == existing().createdAt
+          && incoming().updatedAt == request.time
+          && exists(/databases/$(database)/documents/users/$(userId)/units/$(incoming().unitId))
+          && incoming().diff(existing()).affectedKeys().hasOnly([
+            'unitId', 'tenantId', 'month', 'prevReading', 'currReading',
+            'unitRate', 'consumedUnits', 'baseRent', 'elecBill', 'otherCharge',
+            'prevDue', 'totalPayable', 'paidAmount', 'dueAmount', 'payMethod',
+            'payDate', 'updatedAt'
+          ]);
+
+        allow delete: if isValidId(userId) && isValidId(billId) && isOwner(userId);
+      }
+    }
+  }
+}

@@ -1,0 +1,6 @@
+{
+  "name": "BariVara Pro",
+  "description": "২৮ রুম ও ২ দোকানের অনলাইন বাড়ি ভাড়া, বিদ্যুৎ বিল ও ডকুমেন্টস ম্যানেজার — পিসি এবং অ্যান্ড্রয়েডে একসাথে রিয়েল-টাইম ক্লাউড সিঙ্ক।",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

@@ -1,0 +1,346 @@
+{
+  "entities": {
+    "UserSettings": {
+      "title": "UserSettings",
+      "description": "Property owner profile and global house settings for BariVara Pro.",
+      "type": "object",
+      "properties": {
+        "ownerUid": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "email": {
+          "type": "string",
+          "format": "email",
+          "maxLength": 254
+        },
+        "displayName": {
+          "type": "string",
+          "maxLength": 120
+        },
+        "houseName": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 120
+        },
+        "houseAddress": {
+          "type": "string",
+          "maxLength": 240
+        },
+        "unitRate": {
+          "type": "number"
+        },
+        "initialized": {
+          "type": "boolean"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": ["ownerUid", "houseName", "houseAddress", "unitRate", "initialized", "createdAt", "updatedAt"]
+    },
+    "Unit": {
+      "title": "Unit",
+      "description": "A residential room or commercial shop unit.",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "ownerUid": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "type": {
+          "type": "string",
+          "enum": ["room", "shop", "family"]
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "floor": {
+          "type": "string",
+          "maxLength": 80
+        },
+        "defaultRent": {
+          "type": "number"
+        },
+        "sortOrder": {
+          "type": "number"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": ["id", "ownerUid", "type", "name", "floor", "defaultRent", "sortOrder", "createdAt", "updatedAt"]
+    },
+    "Tenant": {
+      "title": "Tenant",
+      "description": "Tenant profile, contacts, co-residents, and compressed document images.",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "ownerUid": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "unitId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 120
+        },
+        "occupation": {
+          "type": "string",
+          "maxLength": 120
+        },
+        "phone": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 40
+        },
+        "familyPhone": {
+          "type": "string",
+          "maxLength": 40
+        },
+        "homeAddress": {
+          "type": "string",
+          "maxLength": 300
+        },
+        "rent": {
+          "type": "number"
+        },
+        "advance": {
+          "type": "number"
+        },
+        "inDate": {
+          "type": "string",
+          "maxLength": 20
+        },
+        "outDate": {
+          "type": "string",
+          "maxLength": 20
+        },
+        "initialMeter": {
+          "type": "number"
+        },
+        "nidNumber": {
+          "type": "string",
+          "maxLength": 40
+        },
+        "familyStandard": {
+          "type": "array"
+        },
+        "familyCustom": {
+          "type": "array"
+        },
+        "passportImg": {
+          "type": "string",
+          "maxLength": 160000
+        },
+        "nidFrontImg": {
+          "type": "string",
+          "maxLength": 220000
+        },
+        "nidBackImg": {
+          "type": "string",
+          "maxLength": 220000
+        },
+        "officeIdImg": {
+          "type": "string",
+          "maxLength": 220000
+        },
+        "extraDocs": {
+          "type": "array"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "ownerUid",
+        "unitId",
+        "name",
+        "occupation",
+        "phone",
+        "familyPhone",
+        "homeAddress",
+        "rent",
+        "advance",
+        "inDate",
+        "outDate",
+        "initialMeter",
+        "nidNumber",
+        "familyStandard",
+        "familyCustom",
+        "passportImg",
+        "nidFrontImg",
+        "nidBackImg",
+        "officeIdImg",
+        "extraDocs",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "Bill": {
+      "title": "Bill",
+      "description": "Monthly rent and electricity meter bill record.",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "ownerUid": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "unitId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "tenantId": {
+          "type": "string",
+          "maxLength": 128
+        },
+        "month": {
+          "type": "string",
+          "pattern": "^\\d{4}-\\d{2}$",
+          "maxLength": 10
+        },
+        "prevReading": {
+          "type": "number"
+        },
+        "currReading": {
+          "type": "number"
+        },
+        "unitRate": {
+          "type": "number"
+        },
+        "consumedUnits": {
+          "type": "number"
+        },
+        "baseRent": {
+          "type": "number"
+        },
+        "elecBill": {
+          "type": "number"
+        },
+        "otherCharge": {
+          "type": "number"
+        },
+        "prevDue": {
+          "type": "number"
+        },
+        "totalPayable": {
+          "type": "number"
+        },
+        "paidAmount": {
+          "type": "number"
+        },
+        "dueAmount": {
+          "type": "number"
+        },
+        "payMethod": {
+          "type": "string",
+          "enum": ["Cash", "bKash", "Nagad", "Bank"]
+        },
+        "payDate": {
+          "type": "string",
+          "maxLength": 20
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "ownerUid",
+        "unitId",
+        "tenantId",
+        "month",
+        "prevReading",
+        "currReading",
+        "unitRate",
+        "consumedUnits",
+        "baseRent",
+        "elecBill",
+        "otherCharge",
+        "prevDue",
+        "totalPayable",
+        "paidAmount",
+        "dueAmount",
+        "payMethod",
+        "payDate",
+        "createdAt",
+        "updatedAt"
+      ]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": { "$ref": "#/entities/UserSettings" },
+      "description": "Property owner profile and house settings."
+    },
+    "/users/{userId}/units/{unitId}": {
+      "schema": { "$ref": "#/entities/Unit" },
+      "description": "Residential rooms (28) and commercial shops (2) belonging to the property owner."
+    },
+    "/users/{userId}/tenants/{tenantId}": {
+      "schema": { "$ref": "#/entities/Tenant" },
+      "description": "Active and historical tenants with verified contacts and compressed document images."
+    },
+    "/users/{userId}/bills/{billId}": {
+      "schema": { "$ref": "#/entities/Bill" },
+      "description": "Monthly rent and electricity billing ledger entries."
+    }
+  }
+}

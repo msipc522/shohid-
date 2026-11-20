@@ -1,0 +1,2186 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>বাড়ি ভাড়া ও বিদ্যুৎ বিল ম্যানেজার | BariVara Pro (28 Rooms + 2 Shops)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@300;400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Hind Siliguri', 'Inter', sans-serif;
+            background-color: #f1f5f9;
+            color: #1e293b;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .font-num {
+            font-family: 'Inter', sans-serif;
+        }
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 9999px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+        @media print {
+            body * {
+                visibility: hidden;
+            }
+            #receipt-modal-content, #receipt-modal-content * {
+                visibility: visible;
+            }
+            #receipt-modal-content {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 100%;
+                box-shadow: none !important;
+                border: 1px solid #e2e8f0 !important;
+            }
+            .no-print {
+                display: none !important;
+            }
+        }
+    </style>
+</head>
+<body class="pb-24 md:pb-0">
+
+    <!-- Toast Notification Container -->
+    <div id="toast-container" class="fixed top-4 right-4 z-[100] flex flex-col gap-2 max-w-xs w-full pointer-events-none"></div>
+
+    <!-- Main Layout Wrapper -->
+    <div class="flex min-h-screen">
+
+        <!-- Desktop Sidebar -->
+        <aside class="hidden md:flex md:flex-col md:w-64 bg-slate-900 text-white fixed inset-y-0 left-0 z-30 shadow-xl">
+            <div class="p-6 border-b border-slate-800 flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-emerald-500 flex items-center justify-center text-white font-bold text-xl shadow-lg shadow-emerald-500/30">
+                    <i class="fa-solid fa-building-user"></i>
+                </div>
+                <div>
+                    <h1 class="font-bold text-lg leading-tight tracking-wide">BariVara Pro</h1>
+                    <p class="text-xs text-slate-400">২৮ রুম + ২ দোকান ম্যানেজার</p>
+                </div>
+            </div>
+
+            <nav class="flex-1 p-4 space-y-1.5 overflow-y-auto">
+                <button onclick="switchTab('rooms')" data-tab="rooms" class="nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left font-medium transition-all bg-emerald-600 text-white shadow-md">
+                    <i class="fa-solid fa-grip w-5 text-center"></i>
+                    <span>ড্যাশবোর্ড ও ৩০ ইউনিট</span>
+                </button>
+                <button onclick="switchTab('billing')" data-tab="billing" class="nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left font-medium text-slate-300 hover:bg-slate-800 hover:text-white transition-all">
+                    <i class="fa-solid fa-bolt w-5 text-center"></i>
+                    <span>মাসিক বিল ও ইউনিট</span>
+                </button>
+                <button onclick="switchTab('tenants')" data-tab="tenants" class="nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left font-medium text-slate-300 hover:bg-slate-800 hover:text-white transition-all">
+                    <i class="fa-solid fa-address-card w-5 text-center"></i>
+                    <span>ভাড়াটিয়া ও ডকুমেন্টস</span>
+                </button>
+                <button onclick="switchTab('settings')" data-tab="settings" class="nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left font-medium text-slate-300 hover:bg-slate-800 hover:text-white transition-all">
+                    <i class="fa-solid fa-database w-5 text-center"></i>
+                    <span>ব্যাকআপ ও সেটিংস</span>
+                </button>
+            </nav>
+
+            <div class="p-4 border-t border-slate-800 bg-slate-950/50 space-y-2">
+                <div class="flex items-center justify-between text-xs text-slate-400">
+                    <span>মোট ইউনিট:</span>
+                    <span class="font-num font-semibold text-white">28 Rooms + 2 Shops</span>
+                </div>
+                <div class="flex items-center justify-between text-xs text-slate-400">
+                    <span>ইউনিট রেট:</span>
+                    <span class="font-num font-semibold text-emerald-400" id="sidebar-unit-rate">৳ 10 / Unit</span>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <div class="flex-1 md:ml-64 flex flex-col min-w-0">
+
+            <!-- Mobile Header -->
+            <header class="md:hidden bg-slate-900 text-white px-4 py-3 sticky top-0 z-30 flex items-center justify-between shadow-md">
+                <div class="flex items-center gap-2.5">
+                    <div class="w-8 h-8 rounded-lg bg-emerald-500 flex items-center justify-center text-white">
+                        <i class="fa-solid fa-building-user text-sm"></i>
+                    </div>
+                    <div>
+                        <h1 class="font-bold text-base leading-none" id="mobile-house-title">BariVara Pro</h1>
+                        <p class="text-[11px] text-slate-400 mt-0.5">২৮টি রুম ও ২টি দোকান</p>
+                    </div>
+                </div>
+                <button onclick="openBillModal()" class="bg-amber-500 hover:bg-amber-600 active:scale-95 text-slate-950 text-xs font-bold px-3 py-2 rounded-lg flex items-center gap-1.5 shadow">
+                    <i class="fa-solid fa-bolt"></i> নতুন বিল
+                </button>
+            </header>
+
+            <!-- Dynamic Content Sections -->
+            <main class="flex-1 p-4 md:p-7 max-w-7xl w-full mx-auto">
+
+                <!-- ==================== 1. DASHBOARD & 30 UNITS GRID TAB ==================== -->
+                <section id="tab-rooms" class="tab-section space-y-6">
+                    <!-- Summary Stats -->
+                    <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
+                        <div class="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-sm">
+                            <div class="flex items-center justify-between">
+                                <span class="text-xs font-semibold text-slate-500">মোট ইউনিট (রুম+দোকান)</span>
+                                <span class="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center"><i class="fa-solid fa-door-open text-sm"></i></span>
+                            </div>
+                            <div class="mt-2 flex items-baseline gap-2">
+                                <span class="text-2xl font-bold font-num text-slate-800" id="stat-total-units">30</span>
+                                <span class="text-xs text-slate-400">(২৮ রুম + ২ দোকান)</span>
+                            </div>
+                            <div class="text-xs mt-1 font-medium">
+                                <span class="text-emerald-600" id="stat-occupied-count">0 ভাড়া</span> •
+                                <span class="text-amber-600" id="stat-vacant-count">0 খালি</span>
+                            </div>
+                        </div>
+
+                        <div class="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-sm">
+                            <div class="flex items-center justify-between">
+                                <span class="text-xs font-semibold text-slate-500">মাসিক নির্ধারিত ভাড়া</span>
+                                <span class="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center"><i class="fa-solid fa-house-chimney text-sm"></i></span>
+                            </div>
+                            <div class="mt-2">
+                                <span class="text-2xl font-bold font-num text-slate-800" id="stat-expected-rent">৳0</span>
+                            </div>
+                            <div class="text-xs text-slate-400 mt-1">সক্রিয় রুম ও দোকানের মূল ভাড়া</div>
+                        </div>
+
+                        <div class="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-sm">
+                            <div class="flex items-center justify-between">
+                                <span class="text-xs font-semibold text-slate-500">সর্বমোট আদায় (Paid)</span>
+                                <span class="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center"><i class="fa-solid fa-sack-dollar text-sm"></i></span>
+                            </div>
+                            <div class="mt-2">
+                                <span class="text-2xl font-bold font-num text-emerald-600" id="stat-total-collected">৳0</span>
+                            </div>
+                            <div class="text-xs text-slate-400 mt-1">পরিশোধিত ভাড়া ও বিদ্যুৎ বিল</div>
+                        </div>
+
+                        <div class="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-sm">
+                            <div class="flex items-center justify-between">
+                                <span class="text-xs font-semibold text-slate-500">সর্বমোট বকেয়া (Due)</span>
+                                <span class="w-8 h-8 rounded-lg bg-rose-50 text-rose-600 flex items-center justify-center"><i class="fa-solid fa-circle-exclamation text-sm"></i></span>
+                            </div>
+                            <div class="mt-2">
+                                <span class="text-2xl font-bold font-num text-rose-600" id="stat-total-due">৳0</span>
+                            </div>
+                            <div class="text-xs text-slate-400 mt-1" id="stat-due-units-label">0টি ইউনিটে বকেয়া আছে</div>
+                        </div>
+                    </div>
+
+                    <!-- Filter & Search Bar for 30 Units -->
+                    <div class="bg-white p-3.5 md:p-4 rounded-2xl border border-slate-200 shadow-sm flex flex-col lg:flex-row lg:items-center justify-between gap-3">
+                        <div class="flex flex-wrap items-center gap-1.5">
+                            <button onclick="setUnitFilter('all')" data-ufilter="all" class="ufilter-btn px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold bg-slate-900 text-white transition">সব (৩০)</button>
+                            <button onclick="setUnitFilter('room')" data-ufilter="room" class="ufilter-btn px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold bg-slate-100 text-slate-600 hover:bg-slate-200 transition">রুম (২৮)</button>
+                            <button onclick="setUnitFilter('shop')" data-ufilter="shop" class="ufilter-btn px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold bg-slate-100 text-slate-600 hover:bg-slate-200 transition">দোকান (২)</button>
+                            <button onclick="setUnitFilter('occupied')" data-ufilter="occupied" class="ufilter-btn px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold bg-emerald-50 text-emerald-700 hover:bg-emerald-100 transition">ভাড়া দেওয়া</button>
+                            <button onclick="setUnitFilter('vacant')" data-ufilter="vacant" class="ufilter-btn px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold bg-amber-50 text-amber-700 hover:bg-amber-100 transition">খালি (Vacant)</button>
+                            <button onclick="setUnitFilter('due')" data-ufilter="due" class="ufilter-btn px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold bg-rose-50 text-rose-700 hover:bg-rose-100 transition">বকেয়া (Due)</button>
+                        </div>
+
+                        <div class="relative w-full lg:w-64">
+                            <i class="fa-solid fa-search absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
+                            <input type="text" id="unit-search-input" oninput="renderUnitsGrid()" placeholder="রুম, দোকান বা ভাড়াটিয়ার নাম..." class="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                        </div>
+                    </div>
+
+                    <!-- Commercial Shops Section (2 Shops) -->
+                    <div id="shops-section-wrapper" class="space-y-3">
+                        <div class="flex items-center justify-between">
+                            <h3 class="font-bold text-base text-slate-800 flex items-center gap-2">
+                                <span class="w-7 h-7 rounded-lg bg-purple-100 text-purple-700 flex items-center justify-center"><i class="fa-solid fa-store text-xs"></i></span>
+                                দোকান সমূহ (Commercial Shops - ২টি)
+                            </h3>
+                        </div>
+                        <div id="shops-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-4">
+                            <!-- 2 Shops injected here -->
+                        </div>
+                    </div>
+
+                    <!-- Residential Rooms Section (28 Rooms) -->
+                    <div id="rooms-section-wrapper" class="space-y-3">
+                        <div class="flex items-center justify-between">
+                            <h3 class="font-bold text-base text-slate-800 flex items-center gap-2">
+                                <span class="w-7 h-7 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center"><i class="fa-solid fa-door-closed text-xs"></i></span>
+                                আবাসিক রুম সমূহ (Residential Rooms - ২৮টি)
+                            </h3>
+                            <span class="text-xs text-slate-500">বিস্তারিত দেখতে যেকোনো রুমে ক্লিক করুন</span>
+                        </div>
+                        <div id="rooms-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5 gap-3 md:gap-4">
+                            <!-- 28 Rooms injected here -->
+                        </div>
+                    </div>
+                </section>
+
+                <!-- ==================== 2. MONTHLY BILLING & ELECTRICITY TAB ==================== -->
+                <section id="tab-billing" class="tab-section hidden space-y-5">
+                    <!-- Quick Action & Filters -->
+                    <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex flex-col md:flex-row gap-3 items-stretch md:items-center justify-between">
+                        <div class="flex flex-wrap items-center gap-2">
+                            <select id="bill-filter-unit" onchange="renderBillsTable()" class="px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium">
+                                <option value="all">সকল রুম ও দোকান</option>
+                            </select>
+                            <input type="month" id="bill-filter-month" onchange="renderBillsTable()" class="px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm font-num">
+                            <select id="bill-filter-status" onchange="renderBillsTable()" class="px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium">
+                                <option value="all">সকল স্ট্যাটাস</option>
+                                <option value="paid">পরিশোধিত (Paid)</option>
+                                <option value="due">বকেয়া আছে (Due)</option>
+                            </select>
+                            <button onclick="resetBillFilters()" class="text-xs text-slate-500 hover:text-slate-800 underline px-2">রিসেট</button>
+                        </div>
+
+                        <button onclick="openBillModal()" class="bg-amber-500 hover:bg-amber-600 text-slate-950 px-4 py-2.5 rounded-xl text-sm font-bold flex items-center justify-center gap-2 shadow-sm">
+                            <i class="fa-solid fa-bolt"></i> নতুন মাসিক বিল যোগ করুন
+                        </button>
+                    </div>
+
+                    <!-- Bills Ledger Table -->
+                    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left border-collapse">
+                                <thead>
+                                    <tr class="bg-slate-50 text-slate-600 text-xs uppercase border-b border-slate-200">
+                                        <th class="py-3.5 px-4">মাস</th>
+                                        <th class="py-3.5 px-4">রুম/দোকান ও ভাড়াটিয়া</th>
+                                        <th class="py-3.5 px-4">বিদ্যুৎ ইউনিট (পূর্ব → বর্ত.)</th>
+                                        <th class="py-3.5 px-4">ভাড়া + বিদ্যুৎ + সার্ভিস</th>
+                                        <th class="py-3.5 px-4">মোট বিল</th>
+                                        <th class="py-3.5 px-4">জমা (Paid)</th>
+                                        <th class="py-3.5 px-4">বকেয়া (Due)</th>
+                                        <th class="py-3.5 px-4 text-right">রশিদ / এডিট</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="bills-table-body" class="divide-y divide-slate-100 text-sm">
+                                    <!-- Injected by JS -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- ==================== 3. TENANTS & DOCUMENTS DIRECTORY TAB ==================== -->
+                <section id="tab-tenants" class="tab-section hidden space-y-5">
+                    <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                        <div class="flex items-center gap-2 bg-slate-100 p-1 rounded-xl">
+                            <button onclick="setTenantListMode('active')" id="tmode-active-btn" class="px-4 py-2 rounded-lg text-xs sm:text-sm font-bold bg-white text-slate-900 shadow-sm transition">
+                                বর্তমান ভাড়াটিয়া (<span id="tcount-active">0</span>)
+                            </button>
+                            <button onclick="setTenantListMode('past')" id="tmode-past-btn" class="px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold text-slate-600 hover:text-slate-900 transition">
+                                পূর্ববর্তী ইতিহাস (<span id="tcount-past">0</span>)
+                            </button>
+                        </div>
+
+                        <div class="flex items-center gap-2">
+                            <input type="text" id="tenant-dir-search" oninput="renderTenantsDirectory()" placeholder="নাম, মোবাইল, NID বা রুম খুঁজুন..." class="w-full sm:w-64 px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm">
+                            <button onclick="openTenantAssignModal()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-xl text-sm font-semibold shrink-0">
+                                <i class="fa-solid fa-plus"></i> নতুন
+                            </button>
+                        </div>
+                    </div>
+
+                    <div id="tenants-directory-grid" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+                        <!-- Injected by JS -->
+                    </div>
+                </section>
+
+                <!-- ==================== 4. BACKUP & SETTINGS TAB ==================== -->
+                <section id="tab-settings" class="tab-section hidden space-y-6 max-w-3xl mx-auto">
+                    <div class="bg-white p-5 md:p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+                        <h3 class="font-bold text-lg text-slate-800 flex items-center gap-2">
+                            <i class="fa-solid fa-sliders text-emerald-600"></i> বাড়ির সাধারণ তথ্য ও ইউনিট রেট
+                        </h3>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-xs font-bold text-slate-700 mb-1">বাড়ির / মার্কেটের নাম</label>
+                                <input type="text" id="set-house-name" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-sm">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-slate-700 mb-1">ঠিকানা ও মালিকের মোবাইল</label>
+                                <input type="text" id="set-house-address" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-sm">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-slate-700 mb-1">ডিফল্ট বিদ্যুৎ ইউনিট রেট (৳)</label>
+                                <input type="number" step="0.1" id="set-unit-rate" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-sm font-num font-bold">
+                            </div>
+                        </div>
+                        <button onclick="saveHouseSettings()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2.5 rounded-xl text-sm font-semibold shadow-sm">
+                            সেটিংস সেভ করুন
+                        </button>
+                    </div>
+
+                    <!-- Mobile & PC Sync + CSV Export -->
+                    <div class="bg-white p-5 md:p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+                        <h3 class="font-bold text-lg text-slate-800 flex items-center gap-2">
+                            <i class="fa-solid fa-arrows-rotate text-blue-600"></i> মোবাইল ও পিসি ডাটা ব্যাকআপ ও এক্সেল রিপোর্ট
+                        </h3>
+                        <p class="text-xs sm:text-sm text-slate-600">
+                            লগইন বা পাসওয়ার্ড ছাড়াই সরাসরি এই অ্যাপ ব্যবহার করতে পারবেন। এক ডিভাইস থেকে অন্য ডিভাইসে (PC ↔ Mobile) সব ডাটা ও ছবি নিতে <strong>ব্যাকআপ ডাউনলোড (JSON)</strong> করে অন্য ডিভাইসে <strong>ব্যাকআপ রিস্টোর (JSON)</strong> করুন।
+                        </p>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2">
+                            <button onclick="exportJSONBackup()" class="flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white py-3 px-4 rounded-xl font-semibold text-xs sm:text-sm shadow-sm">
+                                <i class="fa-solid fa-download"></i> ব্যাকআপ ডাউনলোড (JSON)
+                            </button>
+
+                            <label class="flex items-center justify-center gap-2 bg-slate-800 hover:bg-slate-900 text-white py-3 px-4 rounded-xl font-semibold text-xs sm:text-sm shadow-sm cursor-pointer">
+                                <i class="fa-solid fa-upload"></i> ব্যাকআপ রিস্টোর (JSON)
+                                <input type="file" accept=".json" onchange="importJSONBackup(event)" class="hidden">
+                            </label>
+
+                            <button onclick="exportBillsCSV()" class="flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white py-3 px-4 rounded-xl font-semibold text-xs sm:text-sm shadow-sm">
+                                <i class="fa-solid fa-file-excel"></i> এক্সেল রিপোর্ট (CSV)
+                            </button>
+                        </div>
+
+                        <div class="border-t border-slate-100 pt-4 flex items-center justify-between">
+                            <span class="text-xs text-slate-400">নতুন করে সব রুম খালি করতে চান?</span>
+                            <button onclick="resetAllToDefault()" class="text-xs font-semibold text-rose-600 bg-rose-50 hover:bg-rose-100 px-3 py-1.5 rounded-lg">
+                                <i class="fa-solid fa-rotate-left mr-1"></i> রিসেট করুন
+                            </button>
+                        </div>
+                    </div>
+                </section>
+
+            </main>
+        </div>
+    </div>
+
+    <!-- Mobile Bottom Navigation -->
+    <nav class="md:hidden fixed bottom-0 inset-x-0 bg-white border-t border-slate-200 z-40 flex justify-around items-center py-2 px-1 shadow-[0_-4px_12px_rgba(0,0,0,0.06)]">
+        <button onclick="switchTab('rooms')" data-tab="rooms" class="mobile-nav-btn flex flex-col items-center justify-center py-1 px-2 text-emerald-600 font-bold">
+            <i class="fa-solid fa-grip text-lg mb-0.5"></i>
+            <span class="text-[11px]">৩০ ইউনিট</span>
+        </button>
+        <button onclick="switchTab('billing')" data-tab="billing" class="mobile-nav-btn flex flex-col items-center justify-center py-1 px-2 text-slate-500">
+            <i class="fa-solid fa-bolt text-lg mb-0.5"></i>
+            <span class="text-[11px]">বিদ্যুৎ বিল</span>
+        </button>
+        <button onclick="switchTab('tenants')" data-tab="tenants" class="mobile-nav-btn flex flex-col items-center justify-center py-1 px-2 text-slate-500">
+            <i class="fa-solid fa-address-card text-lg mb-0.5"></i>
+            <span class="text-[11px]">ভাড়াটিয়া</span>
+        </button>
+        <button onclick="switchTab('settings')" data-tab="settings" class="mobile-nav-btn flex flex-col items-center justify-center py-1 px-2 text-slate-500">
+            <i class="fa-solid fa-cloud-arrow-up text-lg mb-0.5"></i>
+            <span class="text-[11px]">ব্যাকআপ</span>
+        </button>
+    </nav>
+
+    <!-- ==================== MODAL 1: ROOM / SHOP DETAILS & DOCUMENTS VIEWER ==================== -->
+    <div id="unit-detail-modal" class="fixed inset-0 bg-slate-900/70 backdrop-blur-xs z-50 hidden items-center justify-center p-2.5 sm:p-4 overflow-y-auto">
+        <div class="bg-white rounded-2xl max-w-3xl w-full shadow-2xl overflow-hidden my-auto max-h-[94vh] flex flex-col">
+            <!-- Modal Header -->
+            <div class="px-5 py-4 bg-slate-900 text-white flex items-center justify-between shrink-0">
+                <div class="flex items-center gap-3">
+                    <div id="udetail-icon" class="w-10 h-10 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center text-lg">
+                        <i class="fa-solid fa-door-open"></i>
+                    </div>
+                    <div>
+                        <div class="flex items-center gap-2">
+                            <h3 id="udetail-title" class="font-bold text-lg">রুম ১০১</h3>
+                            <span id="udetail-status-badge" class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-500 text-white">ভাড়া আছে</span>
+                        </div>
+                        <p id="udetail-subtitle" class="text-xs text-slate-400">মাসিক নির্ধারিত ভাড়া: ৳ ১০,০০০</p>
+                    </div>
+                </div>
+                <div class="flex items-center gap-2">
+                    <button onclick="openEditUnitModal()" title="রুমের নাম ও ভাড়া এডিট করুন" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs text-slate-200 flex items-center gap-1">
+                        <i class="fa-solid fa-pen"></i> রুম এডিট
+                    </button>
+                    <button onclick="closeModal('unit-detail-modal')" class="w-8 h-8 rounded-lg bg-slate-800 hover:bg-slate-700 flex items-center justify-center text-slate-300">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Modal Body -->
+            <div id="udetail-body" class="p-4 sm:p-6 overflow-y-auto space-y-6">
+                <!-- Populated dynamically: Either Vacant Assign Prompt OR Full Tenant Profile + Docs + Family Checklist + Bills -->
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== MODAL 2: ASSIGN / EDIT TENANT (WITH CAMERA CAPTURE & CHECKLIST) ==================== -->
+    <div id="tenant-form-modal" class="fixed inset-0 bg-slate-900/75 backdrop-blur-xs z-[55] hidden items-center justify-center p-2.5 sm:p-4 overflow-y-auto">
+        <div class="bg-white rounded-2xl max-w-3xl w-full shadow-2xl overflow-hidden my-auto max-h-[94vh] flex flex-col">
+            <div class="px-5 py-4 bg-slate-900 text-white flex items-center justify-between shrink-0">
+                <div>
+                    <h3 id="tform-modal-title" class="font-bold text-lg">ভাড়াটিয়ার তথ্য ও ডকুমেন্টস</h3>
+                    <p class="text-xs text-slate-400">সরাসরি ক্যামেরা দিয়ে ছবি তুলুন অথবা গ্যালারি থেকে যুক্ত করুন</p>
+                </div>
+                <button onclick="closeModal('tenant-form-modal')" class="w-8 h-8 rounded-lg bg-slate-800 hover:bg-slate-700 flex items-center justify-center text-slate-300">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <form id="tenant-entry-form" onsubmit="handleSaveTenantForm(event)" class="p-4 sm:p-6 space-y-5 overflow-y-auto">
+                <input type="hidden" id="tf-tenant-id">
+
+                <!-- 1. Room/Shop Selection & Rent -->
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3.5 bg-slate-50 p-3.5 rounded-2xl border border-slate-200">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">রুম / দোকান নির্বাচন *</label>
+                        <select id="tf-unit-id" onchange="onTenantFormUnitChange()" required class="w-full px-3 py-2.5 bg-white border border-slate-300 rounded-xl text-sm font-bold text-slate-800">
+                            <!-- Populated by JS -->
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">মাসিক ভাড়া (৳) *</label>
+                        <input type="number" id="tf-rent" required class="w-full px-3 py-2.5 bg-white border border-slate-300 rounded-xl text-sm font-num font-bold">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">অগ্রিম / জামানত (৳)</label>
+                        <input type="number" id="tf-advance" value="0" class="w-full px-3 py-2.5 bg-white border border-slate-300 rounded-xl text-sm font-num">
+                    </div>
+                </div>
+
+                <!-- 2. Passport Size Photo + Basic Personal Info -->
+                <div class="flex flex-col sm:flex-row gap-4 items-center sm:items-start bg-emerald-50/40 p-4 rounded-2xl border border-emerald-100">
+                    <!-- Passport Photo Capture Box -->
+                    <div class="flex flex-col items-center shrink-0">
+                        <div class="w-28 h-32 rounded-2xl bg-white border-2 border-dashed border-emerald-300 overflow-hidden flex items-center justify-center relative shadow-xs">
+                            <img id="prev-passport-img" src="" alt="Passport Photo" class="w-full h-full object-cover hidden">
+                            <div id="prev-passport-placeholder" class="text-center p-2 text-slate-400">
+                                <i class="fa-solid fa-user-tie text-3xl text-emerald-300 mb-1 block"></i>
+                                <span class="text-[10px] font-semibold block leading-tight">পাসপোর্ট সাইজ ছবি</span>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-1.5 mt-2">
+                            <label class="cursor-pointer bg-emerald-600 hover:bg-emerald-700 text-white text-[11px] font-bold px-2.5 py-1.5 rounded-lg flex items-center gap-1 shadow-xs">
+                                <i class="fa-solid fa-camera"></i> ক্যামেরা
+                                <input type="file" accept="image/*" capture="user" onchange="captureDocImage(event, 'passport')" class="hidden">
+                            </label>
+                            <label class="cursor-pointer bg-slate-700 hover:bg-slate-800 text-white text-[11px] font-bold px-2.5 py-1.5 rounded-lg flex items-center gap-1 shadow-xs">
+                                <i class="fa-solid fa-image"></i> গ্যালারি
+                                <input type="file" accept="image/*" onchange="captureDocImage(event, 'passport')" class="hidden">
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Name, Mobile, Family Mobile, Home Address -->
+                    <div class="flex-1 w-full space-y-3">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <div>
+                                <label class="block text-xs font-bold text-slate-700 mb-1">ভাড়াটিয়ার পূর্ণ নাম *</label>
+                                <input type="text" id="tf-name" required placeholder="যেমন: মোঃ কামরুল হাসান" class="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl text-sm">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-slate-700 mb-1">পেশা / দোকানের ধরন</label>
+                                <input type="text" id="tf-occupation" placeholder="যেমন: চাকরিজীবী / মুদি দোকান" class="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl text-sm">
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <div>
+                                <label class="block text-xs font-bold text-slate-700 mb-1">নিজের মোবাইল নম্বর *</label>
+                                <input type="tel" id="tf-phone" required placeholder="017XXXXXXXX" class="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl text-sm font-num">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-blue-700 mb-1">পরিবারের একজনের মোবাইল নম্বর *</label>
+                                <input type="tel" id="tf-family-phone" required placeholder="018XXXXXXXX (স্ত্রী/ভাই/বাবা)" class="w-full px-3 py-2 bg-white border border-blue-200 rounded-xl text-sm font-num">
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 mb-1">স্থায়ী ঠিকানা / গ্রামের বাড়ির ঠিকানা (Home Address) *</label>
+                            <input type="text" id="tf-home-address" required placeholder="গ্রাম, পোস্ট, থানা, জেলা লিখুন..." class="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl text-sm">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 3. Family Members / Co-residents Checklist (সাথে কে কে থাকবে) -->
+                <div class="bg-indigo-50/50 border border-indigo-200/80 rounded-2xl p-4 space-y-3">
+                    <div class="flex items-center justify-between">
+                        <label class="text-sm font-bold text-indigo-950 flex items-center gap-2">
+                            <i class="fa-solid fa-people-roof text-indigo-600"></i> সাথে কে কে থাকবে (চেকলিস্ট নির্বাচন করুন):
+                        </label>
+                        <span class="text-xs text-indigo-600 font-semibold" id="selected-family-count">০ জন নির্বাচিত</span>
+                    </div>
+
+                    <!-- Standard Checkboxes: Wife, Son, Daughter, Mother, Father, Sister -->
+                    <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-2">
+                        <label class="flex items-center gap-2 bg-white px-3 py-2 rounded-xl border border-indigo-100 cursor-pointer hover:border-indigo-400 transition">
+                            <input type="checkbox" value="Wife (স্ত্রী)" onchange="updateFamilyCount()" class="family-std-cb w-4 h-4 accent-indigo-600 rounded">
+                            <span class="text-xs font-bold text-slate-700">Wife (স্ত্রী)</span>
+                        </label>
+                        <label class="flex items-center gap-2 bg-white px-3 py-2 rounded-xl border border-indigo-100 cursor-pointer hover:border-indigo-400 transition">
+                            <input type="checkbox" value="Son (ছেলে)" onchange="updateFamilyCount()" class="family-std-cb w-4 h-4 accent-indigo-600 rounded">
+                            <span class="text-xs font-bold text-slate-700">Son (ছেলে)</span>
+                        </label>
+                        <label class="flex items-center gap-2 bg-white px-3 py-2 rounded-xl border border-indigo-100 cursor-pointer hover:border-indigo-400 transition">
+                            <input type="checkbox" value="Daughter (মেয়ে)" onchange="updateFamilyCount()" class="family-std-cb w-4 h-4 accent-indigo-600 rounded">
+                            <span class="text-xs font-bold text-slate-700">Daughter (মেয়ে)</span>
+                        </label>
+                        <label class="flex items-center gap-2 bg-white px-3 py-2 rounded-xl border border-indigo-100 cursor-pointer hover:border-indigo-400 transition">
+                            <input type="checkbox" value="Mother (মা)" onchange="updateFamilyCount()" class="family-std-cb w-4 h-4 accent-indigo-600 rounded">
+                            <span class="text-xs font-bold text-slate-700">Mother (মা)</span>
+                        </label>
+                        <label class="flex items-center gap-2 bg-white px-3 py-2 rounded-xl border border-indigo-100 cursor-pointer hover:border-indigo-400 transition">
+                            <input type="checkbox" value="Father (বাবা)" onchange="updateFamilyCount()" class="family-std-cb w-4 h-4 accent-indigo-600 rounded">
+                            <span class="text-xs font-bold text-slate-700">Father (বাবা)</span>
+                        </label>
+                        <label class="flex items-center gap-2 bg-white px-3 py-2 rounded-xl border border-indigo-100 cursor-pointer hover:border-indigo-400 transition">
+                            <input type="checkbox" value="Sister (বোন)" onchange="updateFamilyCount()" class="family-std-cb w-4 h-4 accent-indigo-600 rounded">
+                            <span class="text-xs font-bold text-slate-700">Sister (বোন)</span>
+                        </label>
+                    </div>
+
+                    <!-- Custom "Other" Input + Save Tag List -->
+                    <div class="pt-1">
+                        <label class="block text-xs font-bold text-slate-700 mb-1">অন্যান্য (Other - নিজের মতো করে শব্দ লিখে যুক্ত করুন):</label>
+                        <div class="flex gap-2">
+                            <input type="text" id="custom-family-input" onkeydown="if(event.key==='Enter'){event.preventDefault(); addCustomFamilyMember();}" placeholder="যেমন: ভাই, ভাগিনা, ২ ছেলে, দোকানের কর্মচারী..." class="flex-1 px-3 py-2 bg-white border border-indigo-200 rounded-xl text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                            <button type="button" onclick="addCustomFamilyMember()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-xl text-xs font-bold shrink-0">
+                                + যুক্ত করুন
+                            </button>
+                        </div>
+                        <div id="custom-family-tags" class="flex flex-wrap gap-1.5 mt-2">
+                            <!-- Custom tags rendered here -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 4. In Date, Out Date & Initial Meter -->
+                <div class="grid grid-cols-1 sm:grid-cols-4 gap-3 bg-slate-50 p-3.5 rounded-2xl border border-slate-200">
+                    <div>
+                        <label class="block text-xs font-bold text-emerald-700 mb-1">ওঠার তারিখ (In Date) *</label>
+                        <input type="date" id="tf-in-date" required class="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl text-xs sm:text-sm font-num">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-rose-700 mb-1">ছাড়ার তারিখ (Out Date)</label>
+                        <input type="date" id="tf-out-date" class="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl text-xs sm:text-sm font-num">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">শুরুর মিটার রিডিং</label>
+                        <input type="number" step="any" id="tf-initial-meter" value="0" class="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl text-xs sm:text-sm font-num">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">NID নম্বর</label>
+                        <input type="text" id="tf-nid-number" placeholder="NID No" class="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl text-xs sm:text-sm font-num">
+                    </div>
+                </div>
+
+                <!-- 5. Direct Camera Capture for NID Card (Front & Back) & Office ID Card -->
+                <div class="space-y-3">
+                    <h4 class="text-sm font-bold text-slate-800 flex items-center gap-2">
+                        <i class="fa-solid fa-camera-retro text-emerald-600"></i> জরুরি ডকুমেন্টস (ক্যামেরা দিয়ে সরাসরি ছবি তুলুন)
+                    </h4>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                        <!-- NID Front -->
+                        <div class="border border-slate-200 rounded-2xl p-3 bg-slate-50 flex flex-col justify-between">
+                            <span class="text-xs font-bold text-emerald-800 mb-2 block"><i class="fa-solid fa-id-card mr-1"></i> NID কার্ড (সামনের অংশ)</span>
+                            <div id="prev-nidFront-box" class="h-28 bg-white rounded-xl border border-dashed border-slate-300 flex items-center justify-center overflow-hidden mb-2">
+                                <img id="prev-nidFront-img" src="" class="w-full h-full object-cover hidden">
+                                <span id="prev-nidFront-ph" class="text-[11px] text-slate-400">ছবি নেই</span>
+                            </div>
+                            <div class="grid grid-cols-2 gap-1.5">
+                                <label class="cursor-pointer bg-emerald-600 hover:bg-emerald-700 text-white text-[11px] font-bold py-1.5 rounded-lg text-center">
+                                    <i class="fa-solid fa-camera"></i> ছবি তুলুন
+                                    <input type="file" accept="image/*" capture="environment" onchange="captureDocImage(event, 'nidFront')" class="hidden">
+                                </label>
+                                <label class="cursor-pointer bg-white border border-slate-300 hover:bg-slate-100 text-slate-700 text-[11px] font-bold py-1.5 rounded-lg text-center">
+                                    <i class="fa-solid fa-upload"></i> ফাইল
+                                    <input type="file" accept="image/*" onchange="captureDocImage(event, 'nidFront')" class="hidden">
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- NID Back -->
+                        <div class="border border-slate-200 rounded-2xl p-3 bg-slate-50 flex flex-col justify-between">
+                            <span class="text-xs font-bold text-emerald-800 mb-2 block"><i class="fa-regular fa-id-card mr-1"></i> NID কার্ড (পেছনের অংশ)</span>
+                            <div id="prev-nidBack-box" class="h-28 bg-white rounded-xl border border-dashed border-slate-300 flex items-center justify-center overflow-hidden mb-2">
+                                <img id="prev-nidBack-img" src="" class="w-full h-full object-cover hidden">
+                                <span id="prev-nidBack-ph" class="text-[11px] text-slate-400">ছবি নেই</span>
+                            </div>
+                            <div class="grid grid-cols-2 gap-1.5">
+                                <label class="cursor-pointer bg-emerald-600 hover:bg-emerald-700 text-white text-[11px] font-bold py-1.5 rounded-lg text-center">
+                                    <i class="fa-solid fa-camera"></i> ছবি তুলুন
+                                    <input type="file" accept="image/*" capture="environment" onchange="captureDocImage(event, 'nidBack')" class="hidden">
+                                </label>
+                                <label class="cursor-pointer bg-white border border-slate-300 hover:bg-slate-100 text-slate-700 text-[11px] font-bold py-1.5 rounded-lg text-center">
+                                    <i class="fa-solid fa-upload"></i> ফাইল
+                                    <input type="file" accept="image/*" onchange="captureDocImage(event, 'nidBack')" class="hidden">
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Office ID / Trade License -->
+                        <div class="border border-slate-200 rounded-2xl p-3 bg-slate-50 flex flex-col justify-between">
+                            <span class="text-xs font-bold text-blue-800 mb-2 block"><i class="fa-solid fa-id-badge mr-1"></i> অফিস ID / ট্রেড লাইসেন্স</span>
+                            <div id="prev-officeId-box" class="h-28 bg-white rounded-xl border border-dashed border-slate-300 flex items-center justify-center overflow-hidden mb-2">
+                                <img id="prev-officeId-img" src="" class="w-full h-full object-cover hidden">
+                                <span id="prev-officeId-ph" class="text-[11px] text-slate-400">ছবি নেই</span>
+                            </div>
+                            <div class="grid grid-cols-2 gap-1.5">
+                                <label class="cursor-pointer bg-blue-600 hover:bg-blue-700 text-white text-[11px] font-bold py-1.5 rounded-lg text-center">
+                                    <i class="fa-solid fa-camera"></i> ছবি তুলুন
+                                    <input type="file" accept="image/*" capture="environment" onchange="captureDocImage(event, 'officeId')" class="hidden">
+                                </label>
+                                <label class="cursor-pointer bg-white border border-slate-300 hover:bg-slate-100 text-slate-700 text-[11px] font-bold py-1.5 rounded-lg text-center">
+                                    <i class="fa-solid fa-upload"></i> ফাইল
+                                    <input type="file" accept="image/*" onchange="captureDocImage(event, 'officeId')" class="hidden">
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Extra Emergency Documents (Multiple Custom Docs) -->
+                    <div class="border border-slate-200 rounded-2xl p-3.5 bg-amber-50/40 space-y-2.5">
+                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                            <span class="text-xs font-bold text-amber-900"><i class="fa-solid fa-folder-plus mr-1"></i> অন্যান্য জরুরি ডকুমেন্টস (চুক্তিপত্র, পুলিশ ভেরিফিকেশন ইত্যাদি):</span>
+                            <div class="flex items-center gap-1.5">
+                                <input type="text" id="extra-doc-label" placeholder="ডকুমেন্টের নাম লিখুন..." class="px-2.5 py-1.5 bg-white border border-amber-300 rounded-lg text-xs">
+                                <label class="cursor-pointer bg-amber-500 hover:bg-amber-600 text-slate-950 text-xs font-bold px-3 py-1.5 rounded-lg shrink-0">
+                                    <i class="fa-solid fa-camera"></i> ছবি যোগ
+                                    <input type="file" accept="image/*" capture="environment" onchange="addExtraDocument(event)" class="hidden">
+                                </label>
+                            </div>
+                        </div>
+                        <div id="extra-docs-preview-list" class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                            <!-- Extra docs thumbnails -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Form Submit Buttons -->
+                <div class="flex items-center justify-end gap-3 pt-3 border-t border-slate-200">
+                    <button type="button" onclick="closeModal('tenant-form-modal')" class="px-4 py-2.5 rounded-xl border border-slate-300 text-slate-600 text-sm font-semibold">বাতিল</button>
+                    <button type="submit" class="px-6 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-bold shadow-md flex items-center gap-2">
+                        <i class="fa-solid fa-check-circle"></i> সব তথ্য সেভ করুন
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ==================== MODAL 3: EDIT UNIT (ROOM/SHOP NAME & RENT) ==================== -->
+    <div id="edit-unit-modal" class="fixed inset-0 bg-slate-900/70 z-[60] hidden items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-sm w-full p-5 shadow-2xl space-y-4">
+            <h3 class="font-bold text-lg text-slate-800">রুম / দোকানের তথ্য পরিবর্তন</h3>
+            <form onsubmit="handleSaveUnitEdit(event)" class="space-y-3">
+                <input type="hidden" id="eu-id">
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1">রুম / দোকানের নাম</label>
+                    <input type="text" id="eu-name" required class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-sm font-bold">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1">ফ্লোর / অবস্থান</label>
+                    <input type="text" id="eu-floor" class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-sm">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1">নির্ধারিত মাসিক ভাড়া (৳)</label>
+                    <input type="number" id="eu-rent" required class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-sm font-num font-bold">
+                </div>
+                <div class="flex justify-end gap-2 pt-2">
+                    <button type="button" onclick="closeModal('edit-unit-modal')" class="px-4 py-2 rounded-xl border border-slate-300 text-xs font-semibold">বাতিল</button>
+                    <button type="submit" class="px-4 py-2 rounded-xl bg-emerald-600 text-white text-xs font-bold">সেভ করুন</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ==================== MODAL 4: BILL & ELECTRICITY CALCULATOR MODAL ==================== -->
+    <div id="bill-modal" class="fixed inset-0 bg-slate-900/70 backdrop-blur-xs z-[60] hidden items-center justify-center p-3 sm:p-4 overflow-y-auto">
+        <div class="bg-white rounded-2xl max-w-xl w-full shadow-2xl overflow-hidden my-auto max-h-[92vh] flex flex-col">
+            <div class="px-5 py-4 bg-slate-900 text-white flex items-center justify-between shrink-0">
+                <h3 id="bill-modal-title" class="font-bold text-lg">মাসিক বিল ও বিদ্যুৎ ইউনিট হিসাব</h3>
+                <button onclick="closeModal('bill-modal')" class="w-8 h-8 rounded-lg bg-slate-800 hover:bg-slate-700 flex items-center justify-center text-slate-300">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <form id="bill-entry-form" onsubmit="handleSaveBillForm(event)" class="p-5 space-y-4 overflow-y-auto">
+                <input type="hidden" id="bf-bill-id">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">রুম / দোকান নির্বাচন *</label>
+                        <select id="bf-unit-id" onchange="onBillUnitChange()" required class="w-full px-3 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-sm font-bold"></select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">বিলের মাস *</label>
+                        <input type="month" id="bf-month" required class="w-full px-3 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-sm font-num">
+                    </div>
+                </div>
+
+                <!-- Electricity Meter Reading -->
+                <div class="bg-amber-50 border border-amber-200 rounded-xl p-3.5 space-y-3">
+                    <div class="flex items-center justify-between text-xs font-bold text-amber-900">
+                        <span><i class="fa-solid fa-bolt mr-1"></i> বিদ্যুৎ মিটার রিডিং</span>
+                        <div class="flex items-center gap-1">
+                            <span>প্রতি ইউনিট (৳):</span>
+                            <input type="number" step="0.1" id="bf-rate" oninput="recalcBillForm()" class="w-16 px-2 py-0.5 bg-white border border-amber-300 rounded text-center font-num">
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-3 gap-2">
+                        <div>
+                            <label class="block text-[11px] text-slate-600">পূর্ববর্তী ইউনিট</label>
+                            <input type="number" step="any" id="bf-prev" oninput="recalcBillForm()" required class="w-full px-2.5 py-1.5 bg-white border border-slate-300 rounded-lg text-sm font-num">
+                        </div>
+                        <div>
+                            <label class="block text-[11px] text-slate-600">বর্তমান ইউনিট</label>
+                            <input type="number" step="any" id="bf-curr" oninput="recalcBillForm()" required class="w-full px-2.5 py-1.5 bg-white border border-slate-300 rounded-lg text-sm font-num">
+                        </div>
+                        <div>
+                            <label class="block text-[11px] text-slate-600">ব্যবহৃত ইউনিট</label>
+                            <input type="text" id="bf-units" readonly value="0" class="w-full px-2.5 py-1.5 bg-amber-100 border border-amber-300 rounded-lg text-sm font-num font-bold text-amber-900">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Rent & Charges -->
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+                    <div>
+                        <label class="block text-[11px] font-bold text-slate-600 mb-1">রুম/দোকান ভাড়া</label>
+                        <input type="number" id="bf-rent" oninput="recalcBillForm()" required class="w-full px-2.5 py-2 bg-slate-50 border border-slate-300 rounded-xl text-sm font-num font-semibold">
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-bold text-slate-600 mb-1">বিদ্যুৎ বিল (৳)</label>
+                        <input type="number" id="bf-elec" readonly value="0" class="w-full px-2.5 py-2 bg-slate-100 border border-slate-200 rounded-xl text-sm font-num font-bold text-amber-700">
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-bold text-slate-600 mb-1">সার্ভিস চার্জ (৳)</label>
+                        <input type="number" id="bf-other" oninput="recalcBillForm()" value="0" class="w-full px-2.5 py-2 bg-slate-50 border border-slate-300 rounded-xl text-sm font-num">
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-bold text-rose-600 mb-1">পূর্বের বকেয়া (৳)</label>
+                        <input type="number" id="bf-prev-due" oninput="recalcBillForm()" value="0" class="w-full px-2.5 py-2 bg-rose-50 border border-rose-200 rounded-xl text-sm font-num text-rose-700">
+                    </div>
+                </div>
+
+                <!-- Totals & Payment -->
+                <div class="bg-slate-50 p-3.5 rounded-xl border border-slate-200 space-y-3">
+                    <div class="flex justify-between items-center">
+                        <span class="text-sm font-bold text-slate-700">সর্বমোট বিল:</span>
+                        <span class="text-xl font-bold font-num text-slate-900" id="bf-total-display">৳ 0</span>
+                        <input type="hidden" id="bf-total" value="0">
+                    </div>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-xs font-bold text-emerald-700 mb-1">জমা টাকা / Paid (৳)</label>
+                            <input type="number" id="bf-paid" oninput="recalcBillForm()" value="0" class="w-full px-3 py-2 bg-white border-2 border-emerald-400 rounded-xl text-sm font-num font-bold text-emerald-700">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-rose-700 mb-1">বর্তমান বকেয়া / Due (৳)</label>
+                            <input type="text" id="bf-due" readonly value="0" class="w-full px-3 py-2 bg-rose-50 border border-rose-200 rounded-xl text-sm font-num font-bold text-rose-600">
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-600 mb-1">পেমেন্ট মাধ্যম</label>
+                            <select id="bf-method" class="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl text-xs font-semibold">
+                                <option value="Cash">নগদ (Cash)</option>
+                                <option value="bKash">বিকাশ (bKash)</option>
+                                <option value="Nagad">নগদ (Nagad)</option>
+                                <option value="Bank">ব্যাংক (Bank)</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-600 mb-1">পেমেন্ট তারিখ</label>
+                            <input type="date" id="bf-date" class="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl text-xs font-num">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex justify-end gap-2 pt-2">
+                    <button type="button" onclick="closeModal('bill-modal')" class="px-4 py-2 rounded-xl border border-slate-300 text-slate-600 text-sm font-semibold">বাতিল</button>
+                    <button type="submit" class="px-5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-bold shadow">বিল সেভ করুন</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ==================== MODAL 5: FULLSCREEN IMAGE LIGHTBOX ==================== -->
+    <div id="image-lightbox-modal" onclick="closeModal('image-lightbox-modal')" class="fixed inset-0 bg-slate-950/90 z-[80] hidden items-center justify-center p-4">
+        <div onclick="event.stopPropagation()" class="max-w-3xl w-full bg-slate-900 rounded-2xl overflow-hidden border border-slate-700 shadow-2xl">
+            <div class="px-4 py-3 flex items-center justify-between border-b border-slate-800 text-white">
+                <span id="lightbox-title" class="font-bold text-sm">ডকুমেন্ট প্রিভিউ</span>
+                <div class="flex items-center gap-2">
+                    <a id="lightbox-download" href="#" download="document.jpg" class="px-3 py-1 rounded-lg bg-emerald-600 text-xs font-bold hover:bg-emerald-500">
+                        <i class="fa-solid fa-download mr-1"></i> ডাউনলোড
+                    </a>
+                    <button onclick="closeModal('image-lightbox-modal')" class="w-8 h-8 rounded-lg bg-slate-800 text-slate-300 flex items-center justify-center">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="p-3 flex items-center justify-center bg-black max-h-[80vh] overflow-auto">
+                <img id="lightbox-img" src="" class="max-w-full max-h-[75vh] object-contain rounded-lg">
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== MODAL 6: PRINTABLE RECEIPT ==================== -->
+    <div id="receipt-modal" class="fixed inset-0 bg-slate-900/75 z-[70] hidden items-center justify-center p-3 sm:p-4 overflow-y-auto">
+        <div id="receipt-modal-content" class="bg-white rounded-2xl max-w-lg w-full shadow-2xl overflow-hidden my-auto border border-slate-200">
+            <div class="bg-slate-900 text-white p-5 text-center relative">
+                <button onclick="closeModal('receipt-modal')" class="no-print absolute right-4 top-4 w-8 h-8 rounded-lg bg-slate-800 hover:bg-slate-700 flex items-center justify-center text-slate-300">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+                <div class="inline-block px-3 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 text-xs font-semibold mb-1">ভাড়ার রশিদ / RENT RECEIPT</div>
+                <h3 id="rec-house-name" class="text-xl font-bold">স্বপ্ননীড় ভিলা ও মার্কেট</h3>
+                <p id="rec-house-address" class="text-xs text-slate-300 mt-0.5"></p>
+            </div>
+
+            <div class="p-5 space-y-4 text-sm">
+                <div class="flex justify-between items-start border-b border-dashed border-slate-300 pb-3">
+                    <div>
+                        <span class="text-xs text-slate-400 block">ভাড়াটিয়া ও ইউনিট:</span>
+                        <strong id="rec-tenant-name" class="text-base text-slate-800 block"></strong>
+                        <span id="rec-unit-name" class="text-xs font-bold text-emerald-700"></span>
+                    </div>
+                    <div class="text-right">
+                        <span class="text-xs text-slate-400 block">বিলের মাস:</span>
+                        <strong id="rec-month" class="text-base font-num text-slate-800 block"></strong>
+                        <span id="rec-date" class="text-xs text-slate-500 font-num"></span>
+                    </div>
+                </div>
+
+                <div class="bg-slate-50 p-3 rounded-xl border border-slate-200 flex justify-between text-xs">
+                    <div><span class="text-slate-500 block">পূর্ববর্তী:</span><strong id="rec-prev" class="font-num">0</strong></div>
+                    <div><span class="text-slate-500 block">বর্তমান:</span><strong id="rec-curr" class="font-num">0</strong></div>
+                    <div><span class="text-slate-500 block">ব্যবহৃত:</span><strong id="rec-units" class="font-num text-amber-700">0 U</strong></div>
+                    <div class="text-right"><span class="text-slate-500 block">রেট:</span><strong id="rec-rate" class="font-num">৳10</strong></div>
+                </div>
+
+                <div class="space-y-2">
+                    <div class="flex justify-between"><span>মাসিক ভাড়া</span><span id="rec-rent" class="font-num font-semibold">৳ 0</span></div>
+                    <div class="flex justify-between"><span>বিদ্যুৎ বিল</span><span id="rec-elec" class="font-num font-semibold">৳ 0</span></div>
+                    <div class="flex justify-between"><span>সার্ভিস চার্জ</span><span id="rec-other" class="font-num font-semibold">৳ 0</span></div>
+                    <div class="flex justify-between"><span>পূর্বের বকেয়া</span><span id="rec-prev-due" class="font-num font-semibold text-rose-600">৳ 0</span></div>
+                    <div class="flex justify-between border-t border-slate-200 pt-2 text-base font-bold"><span>সর্বমোট বিল</span><span id="rec-total" class="font-num">৳ 0</span></div>
+                    <div class="flex justify-between text-emerald-700 font-bold"><span>জমা (Paid - <span id="rec-method">Cash</span>)</span><span id="rec-paid" class="font-num">৳ 0</span></div>
+                    <div class="flex justify-between bg-rose-50 p-2.5 rounded-xl text-rose-700 font-bold"><span>বর্তমান বকেয়া (Due)</span><span id="rec-due" class="font-num">৳ 0</span></div>
+                </div>
+
+                <div class="no-print pt-3 border-t border-slate-100 flex gap-2">
+                    <button onclick="window.print()" class="flex-1 bg-slate-900 hover:bg-slate-800 text-white py-2.5 rounded-xl font-semibold text-sm flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-print"></i> প্রিন্ট / PDF
+                    </button>
+                    <button onclick="closeModal('receipt-modal')" class="px-4 py-2.5 rounded-xl border border-slate-300 text-slate-600 font-semibold text-sm">বন্ধ</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== MODAL 7: CONFIRMATION DIALOG ==================== -->
+    <div id="confirm-modal" class="fixed inset-0 bg-slate-900/75 z-[85] hidden items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-sm w-full p-5 shadow-2xl space-y-4">
+            <h3 id="confirm-title" class="font-bold text-lg text-slate-900">নিশ্চিত করুন</h3>
+            <p id="confirm-message" class="text-sm text-slate-600">আপনি কি এই কাজটি করতে চান?</p>
+            <div class="flex justify-end gap-2 pt-2">
+                <button type="button" onclick="closeModal('confirm-modal')" class="px-4 py-2 rounded-xl border border-slate-300 text-slate-700 text-xs font-bold">বাতিল</button>
+                <button type="button" id="confirm-yes-btn" class="px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold">হ্যাঁ, নিশ্চিত</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ==================== STORAGE & DEFAULT 30 UNITS (28 ROOMS + 2 SHOPS) ====================
+        const STORAGE_KEY = 'barivara_pro_30units_v2';
+
+        let appData = {
+            settings: {
+                houseName: 'স্বপ্ননীড় ভিলা ও মার্কেট',
+                houseAddress: 'নারায়ণগঞ্জ, ঢাকা • ০১৭০০-০০০০০০',
+                unitRate: 10
+            },
+            units: [],   // 28 Rooms + 2 Shops
+            tenants: [], // Active & Past Tenants
+            bills: []    // Monthly Bills
+        };
+
+        let currentUnitFilter = 'all';
+        let currentTenantListMode = 'active';
+        let activeUnitDetailId = null;
+
+        // Temporary states inside Tenant Modal
+        let tempDocs = {
+            passport: '',
+            nidFront: '',
+            nidBack: '',
+            officeId: '',
+            extraDocs: [] // [{ label: '...', img: '...' }]
+        };
+        let tempCustomFamily = [];
+
+        function generateDefault30Units() {
+            const units = [];
+            // 2 Commercial Shops (দোকান ০১, দোকান ০২)
+            units.push({ id: 'shop_1', type: 'shop', name: 'দোকান ০১', floor: 'নিচতলা (সামনে)', defaultRent: 15000 });
+            units.push({ id: 'shop_2', type: 'shop', name: 'দোকান ০২', floor: 'নিচতলা (সামনে)', defaultRent: 15000 });
+
+            // 28 Residential Rooms (রুম ১০১ - ১০৭, ২০১ - ২০৭, ৩০১ - ৩০৭, ৪০১ - ৪০৭)
+            const floorNames = ['১ম তলা', '২য় তলা', '৩য় তলা', '৪র্থ তলা'];
+            for (let floor = 1; floor <= 4; floor++) {
+                for (let num = 1; num <= 7; num++) {
+                    const roomNo = `${floor}0${num}`;
+                    units.push({
+                        id: `room_${roomNo}`,
+                        type: 'room',
+                        name: `রুম ${roomNo}`,
+                        floor: floorNames[floor - 1],
+                        defaultRent: 8000
+                    });
+                }
+            }
+            return units;
+        }
+
+        function loadAppData() {
+            try {
+                const raw = localStorage.getItem(STORAGE_KEY);
+                if (raw) {
+                    appData = JSON.parse(raw);
+                    if (!appData.units || appData.units.length === 0) {
+                        appData.units = generateDefault30Units();
+                    }
+                } else {
+                    appData.units = generateDefault30Units();
+                    seedDemoData();
+                }
+            } catch (e) {
+                console.error(e);
+                appData.units = generateDefault30Units();
+            }
+        }
+
+        function saveAppData() {
+            try {
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(appData));
+            } catch (e) {
+                showToast('স্টোরেজ পূর্ণ! অনুগ্রহ করে ব্যাকআপ ডাউনলোড করে রাখুন।', 'error');
+            }
+        }
+        window.saveAppData = saveAppData;
+        function seedDemoData() {
+            const curMonth = new Date().toISOString().slice(0, 7);
+            appData.tenants = [
+                {
+                    id: 'ten_1',
+                    unitId: 'room_101',
+                    name: 'মোঃ সাইফুল ইসলাম',
+                    occupation: 'ব্যাংক কর্মকর্তা',
+                    phone: '01711-223344',
+                    familyPhone: '01811-556677',
+                    homeAddress: 'গ্রাম: সোনারগাঁও, জেলা: নারায়ণগঞ্জ',
+                    rent: 8500,
+                    advance: 17000,
+                    inDate: '2025-01-01',
+                    outDate: '',
+                    initialMeter: 1100,
+                    nidNumber: '1990269874512',
+                    familyStandard: ['Wife (স্ত্রী)', 'Son (ছেলে)', 'Mother (মা)'],
+                    familyCustom: ['১ ছোট বোন'],
+                    docs: { passport: '', nidFront: '', nidBack: '', officeId: '', extraDocs: [] }
+                },
+                {
+                    id: 'ten_2',
+                    unitId: 'shop_1',
+                    name: 'হাজী আব্দুল করিম',
+                    occupation: 'মেসার্স করিম স্টোর (মুদি দোকান)',
+                    phone: '01912-998877',
+                    familyPhone: '01715-443322',
+                    homeAddress: 'বন্দর, নারায়ণগঞ্জ',
+                    rent: 15000,
+                    advance: 50000,
+                    inDate: '2024-06-01',
+                    outDate: '',
+                    initialMeter: 2400,
+                    nidNumber: '1982265412398',
+                    familyStandard: ['Son (ছেলে)'],
+                    familyCustom: ['২ জন দোকানের কর্মচারী'],
+                    docs: { passport: '', nidFront: '', nidBack: '', officeId: '', extraDocs: [] }
+                }
+            ];
+
+            appData.bills = [
+                {
+                    id: 'bill_1',
+                    unitId: 'room_101',
+                    tenantId: 'ten_1',
+                    month: curMonth,
+                    prevReading: 1250,
+                    currReading: 1365,
+                    unitRate: 10,
+                    consumedUnits: 115,
+                    baseRent: 8500,
+                    elecBill: 1150,
+                    otherCharge: 500,
+                    prevDue: 0,
+                    totalPayable: 10150,
+                    paidAmount: 10150,
+                    dueAmount: 0,
+                    payMethod: 'bKash',
+                    payDate: new Date().toISOString().slice(0, 10)
+                },
+                {
+                    id: 'bill_2',
+                    unitId: 'shop_1',
+                    tenantId: 'ten_2',
+                    month: curMonth,
+                    prevReading: 2600,
+                    currReading: 2810,
+                    unitRate: 10,
+                    consumedUnits: 210,
+                    baseRent: 15000,
+                    elecBill: 2100,
+                    otherCharge: 300,
+                    prevDue: 0,
+                    totalPayable: 17400,
+                    paidAmount: 12000,
+                    dueAmount: 5400,
+                    payMethod: 'Cash',
+                    payDate: new Date().toISOString().slice(0, 10)
+                }
+            ];
+            saveAppData();
+        }
+
+        // ==================== HELPERS ====================
+        function formatBDT(num) {
+            return '৳' + Number(num || 0).toLocaleString('en-IN');
+        }
+
+        function formatBanglaMonth(ym) {
+            if (!ym) return '-';
+            const [y, m] = ym.split('-');
+            const months = ['জানুয়ারি', 'ফেব্রুয়ারি', 'মার্চ', 'এপ্রিল', 'মে', 'জুন', 'জুলাই', 'আগস্ট', 'সেপ্টেম্বর', 'অক্টোবর', 'নভেম্বর', 'ডিসেম্বর'];
+            return `${months[parseInt(m, 10) - 1]} ${y}`;
+        }
+
+        function showToast(msg, type = 'success') {
+            const box = document.getElementById('toast-container');
+            const el = document.createElement('div');
+            el.className = `${type === 'error' ? 'bg-rose-600' : 'bg-slate-900 border-l-4 border-emerald-400'} text-white px-4 py-3 rounded-xl shadow-lg text-xs sm:text-sm font-medium flex items-center gap-2 pointer-events-auto transition-all`;
+            el.innerHTML = `<i class="fa-solid ${type === 'error' ? 'fa-circle-xmark' : 'fa-circle-check text-emerald-400'}"></i><span>${msg}</span>`;
+            box.appendChild(el);
+            setTimeout(() => { el.style.opacity = '0'; setTimeout(() => el.remove(), 300); }, 3000);
+        }
+
+        function openModal(id) {
+            const el = document.getElementById(id);
+            el.classList.remove('hidden');
+            el.classList.add('flex');
+        }
+
+        function closeModal(id) {
+            const el = document.getElementById(id);
+            el.classList.add('hidden');
+            el.classList.remove('flex');
+        }
+
+        function getActiveTenantForUnit(unitId) {
+            return appData.tenants.find(t => t.unitId === unitId && !t.outDate) || null;
+        }
+
+        function getUnitTotalDue(unitId) {
+            return appData.bills.filter(b => b.unitId === unitId).reduce((s, b) => s + Number(b.dueAmount || 0), 0);
+        }
+
+        // ==================== NAVIGATION ====================
+        function switchTab(tab) {
+            document.querySelectorAll('.tab-section').forEach(s => s.classList.add('hidden'));
+            document.getElementById(`tab-${tab}`).classList.remove('hidden');
+
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.className = btn.dataset.tab === tab
+                    ? 'nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left font-medium transition-all bg-emerald-600 text-white shadow-md'
+                    : 'nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left font-medium text-slate-300 hover:bg-slate-800 hover:text-white transition-all';
+            });
+
+            document.querySelectorAll('.mobile-nav-btn').forEach(btn => {
+                if (btn.dataset.tab === tab) {
+                    btn.classList.add('text-emerald-600', 'font-bold');
+                    btn.classList.remove('text-slate-500');
+                } else {
+                    btn.classList.remove('text-emerald-600', 'font-bold');
+                    btn.classList.add('text-slate-500');
+                }
+            });
+
+            if (tab === 'rooms') renderUnitsGrid();
+            if (tab === 'billing') renderBillsTable();
+            if (tab === 'tenants') renderTenantsDirectory();
+            if (tab === 'settings') loadSettingsUI();
+        }
+
+        // ==================== 1. DASHBOARD & 30 UNITS GRID ====================
+        function setUnitFilter(filter) {
+            currentUnitFilter = filter;
+            document.querySelectorAll('.ufilter-btn').forEach(btn => {
+                if (btn.dataset.ufilter === filter) {
+                    btn.className = 'ufilter-btn px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold bg-slate-900 text-white transition shadow-xs';
+                } else {
+                    btn.className = 'ufilter-btn px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold bg-slate-100 text-slate-600 hover:bg-slate-200 transition';
+                }
+            });
+            renderUnitsGrid();
+        }
+
+        function renderUnitsGrid() {
+            const activeTenants = appData.tenants.filter(t => !t.outDate);
+            const occupiedCount = activeTenants.length;
+            const totalUnits = appData.units.length;
+            const vacantCount = Math.max(0, totalUnits - occupiedCount);
+            const expectedRent = activeTenants.reduce((s, t) => s + Number(t.rent || 0), 0);
+            const totalPaid = appData.bills.reduce((s, b) => s + Number(b.paidAmount || 0), 0);
+            const totalDue = appData.bills.reduce((s, b) => s + Number(b.dueAmount || 0), 0);
+            const dueUnitsCount = appData.units.filter(u => getUnitTotalDue(u.id) > 0).length;
+
+            document.getElementById('stat-total-units').textContent = totalUnits;
+            document.getElementById('stat-occupied-count').textContent = `${occupiedCount} ভাড়া দেওয়া`;
+            document.getElementById('stat-vacant-count').textContent = `${vacantCount} খালি`;
+            document.getElementById('stat-expected-rent').textContent = formatBDT(expectedRent);
+            document.getElementById('stat-total-collected').textContent = formatBDT(totalPaid);
+            document.getElementById('stat-total-due').textContent = formatBDT(totalDue);
+            document.getElementById('stat-due-units-label').textContent = `${dueUnitsCount}টি ইউনিটে বকেয়া আছে`;
+            document.getElementById('sidebar-unit-rate').textContent = `৳ ${appData.settings.unitRate} / Unit`;
+            document.getElementById('mobile-house-title').textContent = appData.settings.houseName || 'BariVara Pro';
+
+            const query = (document.getElementById('unit-search-input').value || '').toLowerCase();
+
+            const filterFn = (unit) => {
+                const tenant = getActiveTenantForUnit(unit.id);
+                const due = getUnitTotalDue(unit.id);
+                if (currentUnitFilter === 'room' && unit.type !== 'room') return false;
+                if (currentUnitFilter === 'shop' && unit.type !== 'shop') return false;
+                if (currentUnitFilter === 'occupied' && !tenant) return false;
+                if (currentUnitFilter === 'vacant' && tenant) return false;
+                if (currentUnitFilter === 'due' && due <= 0) return false;
+
+                if (query) {
+                    const matchName = unit.name.toLowerCase().includes(query);
+                    const matchTenant = tenant && (tenant.name.toLowerCase().includes(query) || tenant.phone.includes(query));
+                    return matchName || matchTenant;
+                }
+                return true;
+            };
+
+            const shops = appData.units.filter(u => u.type === 'shop' && filterFn(u));
+            const rooms = appData.units.filter(u => u.type === 'room' && filterFn(u));
+
+            document.getElementById('shops-section-wrapper').style.display = shops.length ? 'block' : 'none';
+            document.getElementById('rooms-section-wrapper').style.display = rooms.length ? 'block' : 'none';
+
+            // Render Shops
+            document.getElementById('shops-grid').innerHTML = shops.map(shop => {
+                const tenant = getActiveTenantForUnit(shop.id);
+                const due = getUnitTotalDue(shop.id);
+                const borderClass = due > 0 ? 'border-rose-300 bg-rose-50/20' : (tenant ? 'border-purple-200 bg-white' : 'border-dashed border-slate-300 bg-slate-50/70');
+
+                return `
+                    <div onclick="openUnitDetailModal('${shop.id}')" class="cursor-pointer rounded-2xl border-2 ${borderClass} p-4 shadow-xs hover:shadow-md transition flex items-center justify-between gap-3">
+                        <div class="flex items-center gap-3.5 min-w-0">
+                            ${tenant && tenant.docs && tenant.docs.passport
+                                ? `<img src="${tenant.docs.passport}" class="w-12 h-12 rounded-xl object-cover border border-purple-200 shrink-0">`
+                                : `<div class="w-12 h-12 rounded-xl ${tenant ? 'bg-purple-100 text-purple-700' : 'bg-slate-200 text-slate-500'} flex items-center justify-center text-lg shrink-0"><i class="fa-solid fa-store"></i></div>`
+                            }
+                            <div class="min-w-0">
+                                <div class="flex items-center gap-2">
+                                    <h4 class="font-bold text-base text-slate-900 truncate">${shop.name}</h4>
+                                    <span class="text-[10px] px-2 py-0.5 rounded-full font-bold ${tenant ? 'bg-purple-100 text-purple-800' : 'bg-amber-100 text-amber-800'}">
+                                        ${tenant ? 'ভাড়া দেওয়া' : 'খালি'}
+                                    </span>
+                                </div>
+                                <p class="text-xs sm:text-sm font-semibold text-slate-700 truncate mt-0.5">
+                                    ${tenant ? tenant.name : 'ভাড়াটিয়া যুক্ত করতে ক্লিক করুন'}
+                                </p>
+                                <p class="text-xs text-slate-500 font-num">${tenant ? tenant.phone : shop.floor}</p>
+                            </div>
+                        </div>
+
+                        <div class="text-right shrink-0">
+                            <span class="font-num font-bold text-sm text-slate-800 block">${formatBDT(tenant ? tenant.rent : shop.defaultRent)}</span>
+                            ${due > 0
+                                ? `<span class="inline-block mt-1 px-2 py-0.5 rounded-md bg-rose-100 text-rose-700 font-num font-bold text-xs">বকেয়া: ${formatBDT(due)}</span>`
+                                : (tenant ? `<span class="text-[11px] text-emerald-600 font-semibold">ক্লিয়ার ✓</span>` : `<span class="text-[11px] text-amber-600 font-semibold">+ ভাড়া দিন</span>`)
+                            }
+                        </div>
+                    </div>`;
+            }).join('');
+
+            // Render 28 Rooms
+            document.getElementById('rooms-grid').innerHTML = rooms.map(room => {
+                const tenant = getActiveTenantForUnit(room.id);
+                const due = getUnitTotalDue(room.id);
+
+                let cardStyle = 'border-dashed border-slate-300 bg-white/70 hover:border-amber-400';
+                let badge = `<span class="text-[10px] px-2 py-0.5 rounded-full font-bold bg-amber-100 text-amber-800">খালি</span>`;
+
+                if (tenant) {
+                    if (due > 0) {
+                        cardStyle = 'border-rose-300 bg-rose-50/30 hover:border-rose-500';
+                        badge = `<span class="text-[10px] px-2 py-0.5 rounded-full font-bold bg-rose-100 text-rose-700">বকেয়া</span>`;
+                    } else {
+                        cardStyle = 'border-emerald-200 bg-white hover:border-emerald-500';
+                        badge = `<span class="text-[10px] px-2 py-0.5 rounded-full font-bold bg-emerald-100 text-emerald-700">ভাড়া</span>`;
+                    }
+                }
+
+                return `
+                    <div onclick="openUnitDetailModal('${room.id}')" class="cursor-pointer rounded-2xl border ${cardStyle} p-3.5 shadow-xs hover:shadow-md transition flex flex-col justify-between gap-2.5">
+                        <div class="flex items-center justify-between gap-1">
+                            <span class="font-bold text-sm text-slate-900">${room.name}</span>
+                            ${badge}
+                        </div>
+
+                        <div class="flex items-center gap-2.5">
+                            ${tenant && tenant.docs && tenant.docs.passport
+                                ? `<img src="${tenant.docs.passport}" class="w-9 h-9 rounded-full object-cover border border-emerald-200 shrink-0">`
+                                : `<div class="w-9 h-9 rounded-full ${tenant ? 'bg-emerald-50 text-emerald-600' : 'bg-slate-100 text-slate-400'} flex items-center justify-center text-xs shrink-0"><i class="fa-solid ${tenant ? 'fa-user' : 'fa-plus'}"></i></div>`
+                            }
+                            <div class="min-w-0">
+                                <div class="text-xs font-bold text-slate-800 truncate">${tenant ? tenant.name : 'খালি রুম'}</div>
+                                <div class="text-[11px] text-slate-400 font-num truncate">${tenant ? tenant.phone : room.floor}</div>
+                            </div>
+                        </div>
+
+                        <div class="pt-2 border-t border-slate-100 flex items-center justify-between text-xs">
+                            <span class="font-num font-bold text-slate-700">${formatBDT(tenant ? tenant.rent : room.defaultRent)}</span>
+                            ${due > 0
+                                ? `<span class="font-num font-bold text-rose-600">-${formatBDT(due)}</span>`
+                                : `<span class="text-[11px] text-slate-400">${tenant ? 'বিস্তারিত →' : '+ যুক্ত'}</span>`
+                            }
+                        </div>
+                    </div>`;
+            }).join('');
+        }
+
+        // ==================== UNIT DETAIL MODAL (INSIDE EACH ROOM / SHOP) ====================
+        function openUnitDetailModal(unitId) {
+            activeUnitDetailId = unitId;
+            const unit = appData.units.find(u => u.id === unitId);
+            if (!unit) return;
+
+            const tenant = getActiveTenantForUnit(unitId);
+            const unitBills = appData.bills.filter(b => b.unitId === unitId).sort((a, b) => b.month.localeCompare(a.month));
+
+            document.getElementById('udetail-title').textContent = `${unit.name} (${unit.floor})`;
+            document.getElementById('udetail-icon').innerHTML = `<i class="fa-solid ${unit.type === 'shop' ? 'fa-store' : 'fa-door-open'}"></i>`;
+
+            const badge = document.getElementById('udetail-status-badge');
+            if (tenant) {
+                badge.textContent = 'ভাড়া দেওয়া আছে';
+                badge.className = 'px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-500 text-white';
+                document.getElementById('udetail-subtitle').textContent = `বর্তমান ভাড়া: ${formatBDT(tenant.rent)} • অগ্রিম: ${formatBDT(tenant.advance)}`;
+            } else {
+                badge.textContent = 'খালি (Vacant)';
+                badge.className = 'px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-500 text-slate-950';
+                document.getElementById('udetail-subtitle').textContent = `নির্ধারিত ভাড়া: ${formatBDT(unit.defaultRent)}`;
+            }
+
+            const body = document.getElementById('udetail-body');
+
+            if (!tenant) {
+                body.innerHTML = `
+                    <div class="text-center py-8 px-4 bg-slate-50 rounded-2xl border-2 border-dashed border-slate-300 space-y-3">
+                        <div class="w-16 h-16 rounded-full bg-amber-100 text-amber-600 flex items-center justify-center text-2xl mx-auto">
+                            <i class="fa-solid fa-user-plus"></i>
+                        </div>
+                        <h4 class="font-bold text-lg text-slate-800">এই ${unit.type === 'shop' ? 'দোকানটি' : 'রুমটি'} বর্তমানে খালি আছে</h4>
+                        <p class="text-xs sm:text-sm text-slate-500 max-w-md mx-auto">
+                            নতুন ভাড়াটিয়া যুক্ত করতে নিচের বাটনে ক্লিক করুন। আপনি সরাসরি ক্যামেরা দিয়ে পাসপোর্ট ছবি, NID, অফিস আইডি কার্ড এবং পরিবারের চেকলিস্ট সেভ করতে পারবেন।
+                        </p>
+                        <button onclick="closeModal('unit-detail-modal'); openTenantAssignModal('${unit.id}')" class="bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-3 rounded-xl font-bold text-sm shadow-md inline-flex items-center gap-2">
+                            <i class="fa-solid fa-camera"></i> ভাড়াটিয়া ও ডকুমেন্টস যুক্ত করুন
+                        </button>
+                    </div>
+                    ${renderUnitPastHistoryHTML(unitId)}
+                `;
+            } else {
+                const allFamily = [...(tenant.familyStandard || []), ...(tenant.familyCustom || [])];
+                const docs = tenant.docs || {};
+
+                body.innerHTML = `
+                    <!-- Top Profile Card -->
+                    <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200 flex flex-col sm:flex-row gap-4 items-center sm:items-start">
+                        <div class="shrink-0">
+                            ${docs.passport
+                                ? `<img onclick="openLightbox('${docs.passport}', 'পাসপোর্ট ছবি - ${tenant.name}')" src="${docs.passport}" class="w-24 h-28 rounded-2xl object-cover border-2 border-emerald-400 shadow cursor-pointer">`
+                                : `<div class="w-24 h-28 rounded-2xl bg-emerald-100 text-emerald-700 flex flex-col items-center justify-center border border-emerald-200"><i class="fa-solid fa-user text-3xl"></i><span class="text-[10px] mt-1">ছবি নেই</span></div>`
+                            }
+                        </div>
+
+                        <div class="flex-1 w-full space-y-2 text-center sm:text-left">
+                            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                                <div>
+                                    <h4 class="font-bold text-lg text-slate-900">${tenant.name}</h4>
+                                    <p class="text-xs text-slate-500">${tenant.occupation || 'পেশা উল্লেখ নেই'} • NID: <span class="font-num font-semibold text-slate-700">${tenant.nidNumber || 'নেই'}</span></p>
+                                </div>
+                                <div class="flex items-center justify-center sm:justify-end gap-2">
+                                    <button onclick="closeModal('unit-detail-modal'); openTenantEditModal('${tenant.id}')" class="px-3 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold flex items-center gap-1">
+                                        <i class="fa-solid fa-pen-to-square"></i> এডিট / ছবি যোগ
+                                    </button>
+                                    <button onclick="closeModal('unit-detail-modal'); openBillModalForUnit('${unit.id}')" class="px-3 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-slate-950 text-xs font-bold flex items-center gap-1">
+                                        <i class="fa-solid fa-bolt"></i> বিল করুন
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Contact & Dates Grid -->
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-2 text-xs text-left">
+                                <div class="bg-white p-2.5 rounded-xl border border-slate-200/80">
+                                    <span class="text-slate-400 block text-[11px]">নিজের মোবাইল:</span>
+                                    <a href="tel:${tenant.phone}" class="font-num font-bold text-emerald-700 text-sm hover:underline"><i class="fa-solid fa-phone mr-1"></i>${tenant.phone}</a>
+                                </div>
+                                <div class="bg-white p-2.5 rounded-xl border border-slate-200/80">
+                                    <span class="text-slate-400 block text-[11px]">পরিবারের মোবাইল:</span>
+                                    <a href="tel:${tenant.familyPhone}" class="font-num font-bold text-blue-700 text-sm hover:underline"><i class="fa-solid fa-phone-volume mr-1"></i>${tenant.familyPhone || 'দেওয়া হয়নি'}</a>
+                                </div>
+                                <div class="bg-white p-2.5 rounded-xl border border-slate-200/80 sm:col-span-2">
+                                    <span class="text-slate-400 block text-[11px]">স্থায়ী ঠিকানা (Home Address):</span>
+                                    <strong class="text-slate-800">${tenant.homeAddress || 'দেওয়া হয়নি'}</strong>
+                                </div>
+                                <div class="bg-white p-2.5 rounded-xl border border-slate-200/80 flex justify-between">
+                                    <div><span class="text-slate-400 block text-[10px]">ওঠার তারিখ (In):</span><strong class="font-num text-emerald-700">${tenant.inDate}</strong></div>
+                                    <div><span class="text-slate-400 block text-[10px]">ছাড়ার তারিখ (Out):</span><strong class="font-num text-slate-600">${tenant.outDate || 'চলমান'}</strong></div>
+                                </div>
+                                <div class="bg-white p-2.5 rounded-xl border border-slate-200/80 flex justify-between">
+                                    <div><span class="text-slate-400 block text-[10px]">মাসিক ভাড়া:</span><strong class="font-num text-slate-900">${formatBDT(tenant.rent)}</strong></div>
+                                    <div><span class="text-slate-400 block text-[10px]">অগ্রিম জমা:</span><strong class="font-num text-indigo-700">${formatBDT(tenant.advance)}</strong></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Family Members Checklist Display -->
+                    <div class="bg-indigo-50/60 border border-indigo-200 rounded-2xl p-4">
+                        <h5 class="text-xs font-bold text-indigo-950 mb-2 flex items-center gap-1.5">
+                            <i class="fa-solid fa-people-roof text-indigo-600"></i> সাথে যারা থাকবেন (Family / Co-residents):
+                        </h5>
+                        ${allFamily.length > 0
+                            ? `<div class="flex flex-wrap gap-1.5">${allFamily.map(item => `<span class="px-3 py-1 rounded-full bg-white border border-indigo-200 text-indigo-900 text-xs font-bold shadow-2xs"><i class="fa-solid fa-check text-emerald-500 mr-1"></i>${item}</span>`).join('')}</div>`
+                            : `<p class="text-xs text-slate-500">কোনো সদস্য নির্বাচন করা হয়নি (একা থাকবেন)</p>`
+                        }
+                    </div>
+
+                    <!-- Documents Gallery (NID Front, NID Back, Office ID, Extra Docs) -->
+                    <div class="space-y-2.5">
+                        <div class="flex items-center justify-between">
+                            <h5 class="text-sm font-bold text-slate-800"><i class="fa-solid fa-folder-open text-emerald-600 mr-1.5"></i> সংরক্ষিত NID ও জরুরি ডকুমেন্টস</h5>
+                            <button onclick="closeModal('unit-detail-modal'); openTenantEditModal('${tenant.id}')" class="text-xs font-bold text-emerald-700 hover:underline">+ আরও ছবি তুলুন</button>
+                        </div>
+                        <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                            ${renderDocThumbCard('NID সামনের অংশ', docs.nidFront)}
+                            ${renderDocThumbCard('NID পেছনের অংশ', docs.nidBack)}
+                            ${renderDocThumbCard('অফিস ID / লাইসেন্স', docs.officeId)}
+                            ${(docs.extraDocs || []).map(ed => renderDocThumbCard(ed.label || 'জরুরি ডকুমেন্ট', ed.img)).join('')}
+                        </div>
+                    </div>
+
+                    <!-- Unit Monthly Bill History -->
+                    <div class="space-y-2.5">
+                        <h5 class="text-sm font-bold text-slate-800"><i class="fa-solid fa-file-invoice-dollar text-amber-500 mr-1.5"></i> এই রুমের মাসিক বিল ও বকেয়া ইতিহাস</h5>
+                        ${unitBills.length === 0
+                            ? `<p class="text-xs text-slate-400 bg-slate-50 p-4 rounded-xl text-center">এখনো কোনো বিল তৈরি করা হয়নি।</p>`
+                            : `<div class="overflow-x-auto border border-slate-200 rounded-xl">
+                                <table class="w-full text-left text-xs">
+                                    <thead class="bg-slate-50 text-slate-600 border-b border-slate-200">
+                                        <tr>
+                                            <th class="p-2.5">মাস</th>
+                                            <th class="p-2.5">ইউনিট</th>
+                                            <th class="p-2.5">মোট বিল</th>
+                                            <th class="p-2.5">জমা</th>
+                                            <th class="p-2.5">বকেয়া</th>
+                                            <th class="p-2.5 text-right">রশিদ</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="divide-y divide-slate-100">
+                                        ${unitBills.map(b => `
+                                            <tr>
+                                                <td class="p-2.5 font-semibold">${formatBanglaMonth(b.month)}</td>
+                                                <td class="p-2.5 font-num">${b.consumedUnits} U (${formatBDT(b.elecBill)})</td>
+                                                <td class="p-2.5 font-num font-bold">${formatBDT(b.totalPayable)}</td>
+                                                <td class="p-2.5 font-num text-emerald-600 font-bold">${formatBDT(b.paidAmount)}</td>
+                                                <td class="p-2.5 font-num ${b.dueAmount > 0 ? 'text-rose-600 font-bold' : 'text-slate-400'}">${formatBDT(b.dueAmount)}</td>
+                                                <td class="p-2.5 text-right">
+                                                    <button onclick="openReceipt('${b.id}')" class="px-2 py-1 rounded bg-slate-100 hover:bg-slate-200 text-slate-700"><i class="fa-solid fa-receipt"></i></button>
+                                                </td>
+                                            </tr>`).join('')}
+                                    </tbody>
+                                </table>
+                            </div>`
+                        }
+                    </div>
+                `;
+            }
+
+            openModal('unit-detail-modal');
+        }
+
+        function renderDocThumbCard(label, imgSrc) {
+            if (!imgSrc) {
+                return `
+                    <div class="border border-dashed border-slate-300 rounded-xl p-3 bg-slate-50 text-center flex flex-col items-center justify-center min-h-[110px]">
+                        <i class="fa-regular fa-image text-slate-300 text-xl mb-1"></i>
+                        <span class="text-[11px] font-bold text-slate-600">${label}</span>
+                        <span class="text-[10px] text-slate-400">আপলোড করা হয়নি</span>
+                    </div>`;
+            }
+            return `
+                <div onclick="openLightbox('${imgSrc}', '${label}')" class="cursor-pointer group border border-slate-200 rounded-xl overflow-hidden bg-white shadow-2xs hover:shadow-md transition">
+                    <div class="h-24 overflow-hidden bg-slate-100 relative">
+                        <img src="${imgSrc}" class="w-full h-full object-cover group-hover:scale-105 transition">
+                        <div class="absolute inset-0 bg-black/0 group-hover:bg-black/20 flex items-center justify-center transition">
+                            <i class="fa-solid fa-magnifying-glass-plus text-white opacity-0 group-hover:opacity-100"></i>
+                        </div>
+                    </div>
+                    <div class="p-2 text-[11px] font-bold text-slate-700 truncate bg-slate-50">${label}</div>
+                </div>`;
+        }
+
+        function renderUnitPastHistoryHTML(unitId) {
+            const pastTenants = appData.tenants.filter(t => t.unitId === unitId && !!t.outDate);
+            if (pastTenants.length === 0) return '';
+            return `
+                <div class="space-y-2 pt-2">
+                    <h5 class="text-xs font-bold text-slate-600">এই রুমের পূর্ববর্তী ভাড়াটিয়াদের ইতিহাস:</h5>
+                    <div class="space-y-2">
+                        ${pastTenants.map(pt => `
+                            <div class="p-3 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-between text-xs">
+                                <div>
+                                    <strong class="text-slate-800">${pt.name}</strong> (${pt.phone})
+                                    <span class="block text-slate-500 font-num">In: ${pt.inDate} → Out: ${pt.outDate}</span>
+                                </div>
+                                <button onclick="closeModal('unit-detail-modal'); openTenantEditModal('${pt.id}')" class="text-blue-600 font-bold hover:underline">তথ্য দেখুন</button>
+                            </div>`).join('')}
+                    </div>
+                </div>`;
+        }
+
+        function openLightbox(src, title) {
+            document.getElementById('lightbox-img').src = src;
+            document.getElementById('lightbox-title').textContent = title;
+            document.getElementById('lightbox-download').href = src;
+            openModal('image-lightbox-modal');
+        }
+
+        // Edit Unit (Room/Shop Name & Default Rent)
+        function openEditUnitModal() {
+            const u = appData.units.find(item => item.id === activeUnitDetailId);
+            if (!u) return;
+            document.getElementById('eu-id').value = u.id;
+            document.getElementById('eu-name').value = u.name;
+            document.getElementById('eu-floor').value = u.floor;
+            document.getElementById('eu-rent').value = u.defaultRent;
+            openModal('edit-unit-modal');
+        }
+
+        function handleSaveUnitEdit(e) {
+            e.preventDefault();
+            const id = document.getElementById('eu-id').value;
+            const u = appData.units.find(item => item.id === id);
+            if (u) {
+                u.name = document.getElementById('eu-name').value.trim();
+                u.floor = document.getElementById('eu-floor').value.trim();
+                u.defaultRent = Number(document.getElementById('eu-rent').value) || 0;
+                saveAppData();
+                closeModal('edit-unit-modal');
+                openUnitDetailModal(id);
+                renderUnitsGrid();
+                showToast('রুম/দোকানের তথ্য আপডেট হয়েছে!');
+            }
+        }
+
+        // ==================== 2. TENANT FORM (CAMERA CAPTURE & FAMILY CHECKLIST) ====================
+        function populateUnitSelectForTenant(selectedUnitId = null, includeAll = false) {
+            const sel = document.getElementById('tf-unit-id');
+            sel.innerHTML = appData.units.map(u => {
+                const occ = getActiveTenantForUnit(u.id);
+                const statusText = occ && u.id !== selectedUnitId ? ` [ভাড়া আছে: ${occ.name}]` : ' [খালি]';
+                return `<option value="${u.id}">${u.name} (${u.floor})${statusText}</option>`;
+            }).join('');
+            if (selectedUnitId) sel.value = selectedUnitId;
+        }
+
+        function resetTenantFormPreviews() {
+            tempDocs = { passport: '', nidFront: '', nidBack: '', officeId: '', extraDocs: [] };
+            tempCustomFamily = [];
+
+            // Reset Passport
+            document.getElementById('prev-passport-img').classList.add('hidden');
+            document.getElementById('prev-passport-placeholder').classList.remove('hidden');
+
+            // Reset NID & Office ID
+            ['nidFront', 'nidBack', 'officeId'].forEach(key => {
+                document.getElementById(`prev-${key}-img`).classList.add('hidden');
+                document.getElementById(`prev-${key}-ph`).classList.remove('hidden');
+            });
+
+            // Reset Checkboxes & Custom Tags
+            document.querySelectorAll('.family-std-cb').forEach(cb => cb.checked = false);
+            renderCustomFamilyTags();
+            renderExtraDocsList();
+            updateFamilyCount();
+        }
+
+        function openTenantAssignModal(preselectUnitId = null) {
+            document.getElementById('tenant-entry-form').reset();
+            document.getElementById('tf-tenant-id').value = '';
+            resetTenantFormPreviews();
+            populateUnitSelectForTenant(preselectUnitId);
+
+            document.getElementById('tform-modal-title').textContent = 'নতুন ভাড়াটিয়া ও ডকুমেন্টস যুক্ত করুন';
+            document.getElementById('tf-in-date').value = new Date().toISOString().slice(0, 10);
+            onTenantFormUnitChange();
+            openModal('tenant-form-modal');
+        }
+
+        function openTenantEditModal(tenantId) {
+            const t = appData.tenants.find(item => item.id === tenantId);
+            if (!t) return;
+
+            document.getElementById('tenant-entry-form').reset();
+            resetTenantFormPreviews();
+            populateUnitSelectForTenant(t.unitId, true);
+
+            document.getElementById('tform-modal-title').textContent = 'ভাড়াটিয়ার তথ্য ও ডকুমেন্টস আপডেট';
+            document.getElementById('tf-tenant-id').value = t.id;
+            document.getElementById('tf-unit-id').value = t.unitId;
+            document.getElementById('tf-rent').value = t.rent;
+            document.getElementById('tf-advance').value = t.advance || 0;
+            document.getElementById('tf-name').value = t.name;
+            document.getElementById('tf-occupation').value = t.occupation || '';
+            document.getElementById('tf-phone').value = t.phone;
+            document.getElementById('tf-family-phone').value = t.familyPhone || '';
+            document.getElementById('tf-home-address').value = t.homeAddress || '';
+            document.getElementById('tf-in-date').value = t.inDate || '';
+            document.getElementById('tf-out-date').value = t.outDate || '';
+            document.getElementById('tf-initial-meter').value = t.initialMeter || 0;
+            document.getElementById('tf-nid-number').value = t.nidNumber || '';
+
+            // Restore Checkboxes
+            const stdList = t.familyStandard || [];
+            document.querySelectorAll('.family-std-cb').forEach(cb => {
+                cb.checked = stdList.includes(cb.value);
+            });
+            tempCustomFamily = [...(t.familyCustom || [])];
+            renderCustomFamilyTags();
+            updateFamilyCount();
+
+            // Restore Images
+            const docs = t.docs || {};
+            tempDocs = {
+                passport: docs.passport || '',
+                nidFront: docs.nidFront || '',
+                nidBack: docs.nidBack || '',
+                officeId: docs.officeId || '',
+                extraDocs: [...(docs.extraDocs || [])]
+            };
+
+            if (tempDocs.passport) {
+                document.getElementById('prev-passport-img').src = tempDocs.passport;
+                document.getElementById('prev-passport-img').classList.remove('hidden');
+                document.getElementById('prev-passport-placeholder').classList.add('hidden');
+            }
+            ['nidFront', 'nidBack', 'officeId'].forEach(key => {
+                if (tempDocs[key]) {
+                    document.getElementById(`prev-${key}-img`).src = tempDocs[key];
+                    document.getElementById(`prev-${key}-img`).classList.remove('hidden');
+                    document.getElementById(`prev-${key}-ph`).classList.add('hidden');
+                }
+            });
+            renderExtraDocsList();
+
+            openModal('tenant-form-modal');
+        }
+
+        function onTenantFormUnitChange() {
+            const unitId = document.getElementById('tf-unit-id').value;
+            const unit = appData.units.find(u => u.id === unitId);
+            if (unit && !document.getElementById('tf-tenant-id').value) {
+                document.getElementById('tf-rent').value = unit.defaultRent || 0;
+            }
+        }
+
+        // Compress camera/gallery image via HTML5 Canvas
+        function compressImageFile(file, maxWidth, callback) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const img = new Image();
+                img.onload = function() {
+                    const canvas = document.createElement('canvas');
+                    let w = img.width;
+                    let h = img.height;
+                    if (w > maxWidth) {
+                        h = Math.round((h * maxWidth) / w);
+                        w = maxWidth;
+                    }
+                    canvas.width = w;
+                    canvas.height = h;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, w, h);
+                    callback(canvas.toDataURL('image/jpeg', 0.72));
+                };
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function captureDocImage(event, docKey) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const maxW = docKey === 'passport' ? 400 : 750;
+            compressImageFile(file, maxW, (dataUrl) => {
+                tempDocs[docKey] = dataUrl;
+                if (docKey === 'passport') {
+                    document.getElementById('prev-passport-img').src = dataUrl;
+                    document.getElementById('prev-passport-img').classList.remove('hidden');
+                    document.getElementById('prev-passport-placeholder').classList.add('hidden');
+                } else {
+                    document.getElementById(`prev-${docKey}-img`).src = dataUrl;
+                    document.getElementById(`prev-${docKey}-img`).classList.remove('hidden');
+                    document.getElementById(`prev-${docKey}-ph`).classList.add('hidden');
+                }
+                showToast('ছবি যুক্ত করা হয়েছে!');
+            });
+        }
+
+        function addExtraDocument(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const labelInput = document.getElementById('extra-doc-label');
+            const label = labelInput.value.trim() || `ডকুমেন্ট #${tempDocs.extraDocs.length + 1}`;
+            compressImageFile(file, 750, (dataUrl) => {
+                tempDocs.extraDocs.push({ label, img: dataUrl });
+                labelInput.value = '';
+                renderExtraDocsList();
+                showToast(`"${label}" যুক্ত হয়েছে!`);
+            });
+        }
+
+        function removeExtraDoc(idx) {
+            tempDocs.extraDocs.splice(idx, 1);
+            renderExtraDocsList();
+        }
+
+        function renderExtraDocsList() {
+            const box = document.getElementById('extra-docs-preview-list');
+            box.innerHTML = tempDocs.extraDocs.map((d, idx) => `
+                <div class="relative border border-amber-300 rounded-xl overflow-hidden bg-white">
+                    <img src="${d.img}" class="w-full h-20 object-cover">
+                    <div class="p-1.5 text-[10px] font-bold text-slate-700 truncate">${d.label}</div>
+                    <button type="button" onclick="removeExtraDoc(${idx})" class="absolute top-1 right-1 w-5 h-5 rounded-full bg-rose-600 text-white text-[10px] flex items-center justify-center">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                </div>`).join('');
+        }
+
+        // Family Members Checklist Functions
+        function addCustomFamilyMember() {
+            const input = document.getElementById('custom-family-input');
+            const val = input.value.trim();
+            if (!val) return;
+            if (!tempCustomFamily.includes(val)) {
+                tempCustomFamily.push(val);
+            }
+            input.value = '';
+            renderCustomFamilyTags();
+            updateFamilyCount();
+        }
+
+        function removeCustomFamilyMember(idx) {
+            tempCustomFamily.splice(idx, 1);
+            renderCustomFamilyTags();
+            updateFamilyCount();
+        }
+
+        function renderCustomFamilyTags() {
+            const box = document.getElementById('custom-family-tags');
+            box.innerHTML = tempCustomFamily.map((item, idx) => `
+                <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-indigo-600 text-white text-xs font-bold">
+                    <i class="fa-solid fa-check text-[10px]"></i> ${item}
+                    <button type="button" onclick="removeCustomFamilyMember(${idx})" class="hover:text-rose-200 ml-0.5"><i class="fa-solid fa-xmark"></i></button>
+                </span>`).join('');
+        }
+
+        function updateFamilyCount() {
+            const stdChecked = document.querySelectorAll('.family-std-cb:checked').length;
+            const total = stdChecked + tempCustomFamily.length;
+            document.getElementById('selected-family-count').textContent = `${total} জন নির্বাচিত`;
+        }
+
+        function handleSaveTenantForm(e) {
+            e.preventDefault();
+            const tenantId = document.getElementById('tf-tenant-id').value;
+            const unitId = document.getElementById('tf-unit-id').value;
+            const outDate = document.getElementById('tf-out-date').value;
+
+            // If assigning new active tenant to a unit that already has an active tenant, warn or close previous
+            if (!tenantId && !outDate) {
+                const existingActive = getActiveTenantForUnit(unitId);
+                if (existingActive) {
+                    showToast(`এই রুমে ইতিমধ্যে ${existingActive.name} আছেন! আগে তার Out Date দিন।`, 'error');
+                    return;
+                }
+            }
+
+            const familyStandard = Array.from(document.querySelectorAll('.family-std-cb:checked')).map(cb => cb.value);
+
+            const tenantObj = {
+                id: tenantId || 'ten_' + Date.now(),
+                unitId,
+                name: document.getElementById('tf-name').value.trim(),
+                occupation: document.getElementById('tf-occupation').value.trim(),
+                phone: document.getElementById('tf-phone').value.trim(),
+                familyPhone: document.getElementById('tf-family-phone').value.trim(),
+                homeAddress: document.getElementById('tf-home-address').value.trim(),
+                rent: Number(document.getElementById('tf-rent').value) || 0,
+                advance: Number(document.getElementById('tf-advance').value) || 0,
+                inDate: document.getElementById('tf-in-date').value,
+                outDate: outDate,
+                initialMeter: Number(document.getElementById('tf-initial-meter').value) || 0,
+                nidNumber: document.getElementById('tf-nid-number').value.trim(),
+                familyStandard,
+                familyCustom: [...tempCustomFamily],
+                docs: { ...tempDocs }
+            };
+
+            if (tenantId) {
+                const idx = appData.tenants.findIndex(t => t.id === tenantId);
+                if (idx !== -1) appData.tenants[idx] = tenantObj;
+                showToast('ভাড়াটিয়ার তথ্য ও ডকুমেন্টস আপডেট হয়েছে!');
+            } else {
+                appData.tenants.push(tenantObj);
+                showToast('নতুন ভাড়াটিয়া সফলভাবে যুক্ত হয়েছেন!');
+            }
+
+            saveAppData();
+            closeModal('tenant-form-modal');
+            renderUnitsGrid();
+            renderTenantsDirectory();
+        }
+
+        // ==================== 3. TENANTS DIRECTORY ====================
+        function setTenantListMode(mode) {
+            currentTenantListMode = mode;
+            const actBtn = document.getElementById('tmode-active-btn');
+            const pastBtn = document.getElementById('tmode-past-btn');
+            if (mode === 'active') {
+                actBtn.className = 'px-4 py-2 rounded-lg text-xs sm:text-sm font-bold bg-white text-slate-900 shadow-sm transition';
+                pastBtn.className = 'px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold text-slate-600 hover:text-slate-900 transition';
+            } else {
+                pastBtn.className = 'px-4 py-2 rounded-lg text-xs sm:text-sm font-bold bg-white text-slate-900 shadow-sm transition';
+                actBtn.className = 'px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold text-slate-600 hover:text-slate-900 transition';
+            }
+            renderTenantsDirectory();
+        }
+
+        function renderTenantsDirectory() {
+            const activeList = appData.tenants.filter(t => !t.outDate);
+            const pastList = appData.tenants.filter(t => !!t.outDate);
+            document.getElementById('tcount-active').textContent = activeList.length;
+            document.getElementById('tcount-past').textContent = pastList.length;
+
+            const q = (document.getElementById('tenant-dir-search').value || '').toLowerCase();
+            const list = (currentTenantListMode === 'active' ? activeList : pastList).filter(t => {
+                const unit = appData.units.find(u => u.id === t.unitId) || { name: '' };
+                return t.name.toLowerCase().includes(q) || t.phone.includes(q) || (t.nidNumber || '').includes(q) || unit.name.toLowerCase().includes(q);
+            });
+
+            const grid = document.getElementById('tenants-directory-grid');
+            if (list.length === 0) {
+                grid.innerHTML = `<div class="col-span-full bg-white p-10 rounded-2xl border border-slate-200 text-center text-slate-400">কোনো ভাড়াটিয়া পাওয়া যায়নি।</div>`;
+                return;
+            }
+
+            grid.innerHTML = list.map(t => {
+                const unit = appData.units.find(u => u.id === t.unitId) || { name: 'অজানা ইউনিট' };
+                const family = [...(t.familyStandard || []), ...(t.familyCustom || [])];
+                const docs = t.docs || {};
+
+                return `
+                    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-4 flex flex-col justify-between gap-3">
+                        <div class="flex items-start gap-3">
+                            ${docs.passport
+                                ? `<img src="${docs.passport}" class="w-14 h-16 rounded-xl object-cover border border-slate-200 shrink-0">`
+                                : `<div class="w-14 h-16 rounded-xl bg-slate-100 text-slate-400 flex items-center justify-center text-xl shrink-0"><i class="fa-solid fa-user"></i></div>`
+                            }
+                            <div class="min-w-0 flex-1">
+                                <span class="inline-block px-2 py-0.5 rounded-md text-[11px] font-bold bg-emerald-100 text-emerald-800 mb-1">${unit.name}</span>
+                                <h4 class="font-bold text-base text-slate-900 truncate">${t.name}</h4>
+                                <p class="text-xs text-slate-500 font-num">${t.phone} ${t.familyPhone ? `• ফ্যামিলি: ${t.familyPhone}` : ''}</p>
+                                <p class="text-[11px] text-slate-500 truncate mt-0.5"><i class="fa-solid fa-location-dot text-rose-500 mr-1"></i>${t.homeAddress || '-'}</p>
+                            </div>
+                        </div>
+
+                        <div class="text-xs bg-slate-50 p-2.5 rounded-xl border border-slate-100 space-y-1">
+                            <div class="flex justify-between">
+                                <span class="text-slate-500">In: <strong class="font-num text-emerald-700">${t.inDate}</strong></span>
+                                <span class="text-slate-500">Out: <strong class="font-num text-rose-600">${t.outDate || 'চলমান'}</strong></span>
+                            </div>
+                            <div class="text-slate-600 truncate">
+                                <strong>সাথে থাকবে:</strong> ${family.length ? family.join(', ') : 'একা'}
+                            </div>
+                        </div>
+
+                        <div class="flex items-center justify-between pt-1">
+                            <button onclick="openUnitDetailModal('${t.unitId}')" class="text-xs font-bold text-blue-600 hover:underline">
+                                <i class="fa-solid fa-folder-open mr-1"></i> ডকুমেন্টস ও রুম দেখুন
+                            </button>
+                            <button onclick="openTenantEditModal('${t.id}')" class="px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold">
+                                এডিট
+                            </button>
+                        </div>
+                    </div>`;
+            }).join('');
+        }
+
+        // ==================== 4. BILLING & ELECTRICITY ====================
+        function openBillModal(billId = null) {
+            const sel = document.getElementById('bf-unit-id');
+            sel.innerHTML = appData.units.map(u => {
+                const t = getActiveTenantForUnit(u.id);
+                return `<option value="${u.id}">${u.name} ${t ? `- ${t.name}` : '(খালি)'}</option>`;
+            }).join('');
+
+            document.getElementById('bf-bill-id').value = '';
+            document.getElementById('bf-month').value = new Date().toISOString().slice(0, 7);
+            document.getElementById('bf-date').value = new Date().toISOString().slice(0, 10);
+            document.getElementById('bf-rate').value = appData.settings.unitRate || 10;
+
+            if (billId) {
+                const b = appData.bills.find(item => item.id === billId);
+                if (!b) return;
+                document.getElementById('bill-modal-title').textContent = 'বিল ও পেমেন্ট আপডেট';
+                document.getElementById('bf-bill-id').value = b.id;
+                document.getElementById('bf-unit-id').value = b.unitId;
+                document.getElementById('bf-month').value = b.month;
+                document.getElementById('bf-rate').value = b.unitRate;
+                document.getElementById('bf-prev').value = b.prevReading;
+                document.getElementById('bf-curr').value = b.currReading;
+                document.getElementById('bf-rent').value = b.baseRent;
+                document.getElementById('bf-other').value = b.otherCharge;
+                document.getElementById('bf-prev-due').value = b.prevDue;
+                document.getElementById('bf-paid').value = b.paidAmount;
+                document.getElementById('bf-method').value = b.payMethod || 'Cash';
+                document.getElementById('bf-date').value = b.payDate || new Date().toISOString().slice(0, 10);
+                recalcBillForm();
+            } else {
+                document.getElementById('bill-modal-title').textContent = 'নতুন মাসিক বিল তৈরি করুন';
+                onBillUnitChange();
+            }
+            openModal('bill-modal');
+        }
+
+        function openBillModalForUnit(unitId) {
+            openBillModal();
+            document.getElementById('bf-unit-id').value = unitId;
+            onBillUnitChange();
+        }
+
+        function onBillUnitChange() {
+            const unitId = document.getElementById('bf-unit-id').value;
+            const unit = appData.units.find(u => u.id === unitId);
+            const tenant = getActiveTenantForUnit(unitId);
+
+            document.getElementById('bf-rent').value = tenant ? tenant.rent : (unit ? unit.defaultRent : 0);
+
+            const unitBills = appData.bills.filter(b => b.unitId === unitId).sort((a, b) => b.month.localeCompare(a.month));
+            if (unitBills.length > 0) {
+                const last = unitBills[0];
+                document.getElementById('bf-prev').value = last.currReading || 0;
+                document.getElementById('bf-curr').value = last.currReading || 0;
+                document.getElementById('bf-prev-due').value = last.dueAmount || 0;
+            } else {
+                const initM = tenant ? (tenant.initialMeter || 0) : 0;
+                document.getElementById('bf-prev').value = initM;
+                document.getElementById('bf-curr').value = initM;
+                document.getElementById('bf-prev-due').value = 0;
+            }
+            document.getElementById('bf-paid').value = 0;
+            recalcBillForm();
+        }
+
+        function recalcBillForm() {
+            const prev = parseFloat(document.getElementById('bf-prev').value) || 0;
+            const curr = parseFloat(document.getElementById('bf-curr').value) || 0;
+            const rate = parseFloat(document.getElementById('bf-rate').value) || 0;
+            const units = Math.max(0, curr - prev);
+            const elec = Math.round(units * rate);
+
+            const rent = parseFloat(document.getElementById('bf-rent').value) || 0;
+            const other = parseFloat(document.getElementById('bf-other').value) || 0;
+            const prevDue = parseFloat(document.getElementById('bf-prev-due').value) || 0;
+            const total = rent + elec + other + prevDue;
+            const paid = parseFloat(document.getElementById('bf-paid').value) || 0;
+            const due = Math.max(0, total - paid);
+
+            document.getElementById('bf-units').value = units.toFixed(1).replace(/\.0$/, '');
+            document.getElementById('bf-elec').value = elec;
+            document.getElementById('bf-total').value = total;
+            document.getElementById('bf-total-display').textContent = formatBDT(total);
+            document.getElementById('bf-due').value = due;
+        }
+
+        function handleSaveBillForm(e) {
+            e.preventDefault();
+            const unitId = document.getElementById('bf-unit-id').value;
+            const prev = parseFloat(document.getElementById('bf-prev').value) || 0;
+            const curr = parseFloat(document.getElementById('bf-curr').value) || 0;
+            if (curr < prev) {
+                showToast('বর্তমান ইউনিট পূর্ববর্তী ইউনিটের চেয়ে কম হতে পারে না!', 'error');
+                return;
+            }
+
+            const billId = document.getElementById('bf-bill-id').value;
+            const rate = parseFloat(document.getElementById('bf-rate').value) || 0;
+            const units = Number((curr - prev).toFixed(2));
+            const baseRent = parseFloat(document.getElementById('bf-rent').value) || 0;
+            const elecBill = Math.round(units * rate);
+            const otherCharge = parseFloat(document.getElementById('bf-other').value) || 0;
+            const prevDue = parseFloat(document.getElementById('bf-prev-due').value) || 0;
+            const totalPayable = baseRent + elecBill + otherCharge + prevDue;
+            const paidAmount = parseFloat(document.getElementById('bf-paid').value) || 0;
+            const dueAmount = Math.max(0, totalPayable - paidAmount);
+            const activeTenant = getActiveTenantForUnit(unitId);
+
+            const billObj = {
+                id: billId || 'bill_' + Date.now(),
+                unitId,
+                tenantId: activeTenant ? activeTenant.id : '',
+                month: document.getElementById('bf-month').value,
+                prevReading: prev,
+                currReading: curr,
+                unitRate: rate,
+                consumedUnits: units,
+                baseRent,
+                elecBill,
+                otherCharge,
+                prevDue,
+                totalPayable,
+                paidAmount,
+                dueAmount,
+                payMethod: document.getElementById('bf-method').value,
+                payDate: document.getElementById('bf-date').value
+            };
+
+            if (billId) {
+                const idx = appData.bills.findIndex(b => b.id === billId);
+                if (idx !== -1) appData.bills[idx] = billObj;
+                showToast('বিল আপডেট করা হয়েছে!');
+            } else {
+                appData.bills.push(billObj);
+                showToast('নতুন মাসিক বিল সেভ করা হয়েছে!');
+            }
+
+            saveAppData();
+            closeModal('bill-modal');
+            renderUnitsGrid();
+            renderBillsTable();
+        }
+
+        function renderBillsTable() {
+            const unitSel = document.getElementById('bill-filter-unit');
+            const curUnit = unitSel.value;
+            unitSel.innerHTML = `<option value="all">সকল রুম ও দোকান</option>` +
+                appData.units.map(u => `<option value="${u.id}">${u.name}</option>`).join('');
+            unitSel.value = curUnit || 'all';
+
+            const fUnit = unitSel.value;
+            const fMonth = document.getElementById('bill-filter-month').value;
+            const fStatus = document.getElementById('bill-filter-status').value;
+
+            const filtered = appData.bills.filter(b => {
+                if (fUnit !== 'all' && b.unitId !== fUnit) return false;
+                if (fMonth && b.month !== fMonth) return false;
+                if (fStatus === 'paid' && b.dueAmount > 0) return false;
+                if (fStatus === 'due' && b.dueAmount <= 0) return false;
+                return true;
+            }).sort((a, b) => b.month.localeCompare(a.month));
+
+            const tbody = document.getElementById('bills-table-body');
+            if (filtered.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="8" class="py-10 text-center text-slate-400">কোনো বিলের হিসাব পাওয়া যায়নি।</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = filtered.map(b => {
+                const unit = appData.units.find(u => u.id === b.unitId) || { name: '-' };
+                const tenant = appData.tenants.find(t => t.id === b.tenantId) || getActiveTenantForUnit(b.unitId) || { name: 'ভাড়াটিয়া' };
+                return `
+                    <tr class="hover:bg-slate-50 transition">
+                        <td class="py-3 px-4 font-semibold text-slate-800 whitespace-nowrap">${formatBanglaMonth(b.month)}</td>
+                        <td class="py-3 px-4">
+                            <div class="font-bold text-slate-900">${unit.name}</div>
+                            <div class="text-xs text-slate-500">${tenant.name}</div>
+                        </td>
+                        <td class="py-3 px-4 font-num text-xs whitespace-nowrap">
+                            ${b.prevReading} → ${b.currReading}
+                            <span class="block text-amber-700 font-bold">${b.consumedUnits} U (৳${b.unitRate}/U)</span>
+                        </td>
+                        <td class="py-3 px-4 font-num text-xs whitespace-nowrap">
+                            ভাড়া: ${formatBDT(b.baseRent)}<br>
+                            বিদ্যুৎ: ${formatBDT(b.elecBill)} + অন্য: ${formatBDT(b.otherCharge)}
+                        </td>
+                        <td class="py-3 px-4 font-num font-bold text-slate-900">${formatBDT(b.totalPayable)}</td>
+                        <td class="py-3 px-4 font-num font-bold text-emerald-600">${formatBDT(b.paidAmount)}</td>
+                        <td class="py-3 px-4 font-num font-bold ${b.dueAmount > 0 ? 'text-rose-600' : 'text-slate-400'}">${formatBDT(b.dueAmount)}</td>
+                        <td class="py-3 px-4 text-right whitespace-nowrap">
+                            <button onclick="openReceipt('${b.id}')" class="p-2 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700"><i class="fa-solid fa-receipt text-xs"></i></button>
+                            <button onclick="openBillModal('${b.id}')" class="p-2 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-700"><i class="fa-solid fa-pen text-xs"></i></button>
+                            <button onclick="deleteBill('${b.id}')" class="p-2 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-600"><i class="fa-solid fa-trash text-xs"></i></button>
+                        </td>
+                    </tr>`;
+            }).join('');
+        }
+
+        function resetBillFilters() {
+            document.getElementById('bill-filter-unit').value = 'all';
+            document.getElementById('bill-filter-month').value = '';
+            document.getElementById('bill-filter-status').value = 'all';
+            renderBillsTable();
+        }
+
+        function deleteBill(id) {
+            showConfirm('বিল মুছে ফেলবেন?', 'এই মাসের বিলের হিসাব স্থায়ীভাবে মুছে যাবে।', () => {
+                appData.bills = appData.bills.filter(b => b.id !== id);
+                saveAppData();
+                renderBillsTable();
+                renderUnitsGrid();
+                showToast('বিল মুছে ফেলা হয়েছে।');
+            });
+        }
+
+        function openReceipt(billId) {
+            const b = appData.bills.find(item => item.id === billId);
+            if (!b) return;
+            const unit = appData.units.find(u => u.id === b.unitId) || { name: '-' };
+            const tenant = appData.tenants.find(t => t.id === b.tenantId) || getActiveTenantForUnit(b.unitId) || { name: 'ভাড়াটিয়া' };
+
+            document.getElementById('rec-house-name').textContent = appData.settings.houseName;
+            document.getElementById('rec-house-address').textContent = appData.settings.houseAddress;
+            document.getElementById('rec-tenant-name').textContent = tenant.name;
+            document.getElementById('rec-unit-name').textContent = unit.name;
+            document.getElementById('rec-month').textContent = formatBanglaMonth(b.month);
+            document.getElementById('rec-date').textContent = `তারিখ: ${b.payDate || '-'}`;
+
+            document.getElementById('rec-prev').textContent = b.prevReading;
+            document.getElementById('rec-curr').textContent = b.currReading;
+            document.getElementById('rec-units').textContent = `${b.consumedUnits} U`;
+            document.getElementById('rec-rate').textContent = `৳${b.unitRate}`;
+
+            document.getElementById('rec-rent').textContent = formatBDT(b.baseRent);
+            document.getElementById('rec-elec').textContent = formatBDT(b.elecBill);
+            document.getElementById('rec-other').textContent = formatBDT(b.otherCharge);
+            document.getElementById('rec-prev-due').textContent = formatBDT(b.prevDue);
+            document.getElementById('rec-total').textContent = formatBDT(b.totalPayable);
+            document.getElementById('rec-method').textContent = b.payMethod || 'Cash';
+            document.getElementById('rec-paid').textContent = formatBDT(b.paidAmount);
+            document.getElementById('rec-due').textContent = formatBDT(b.dueAmount);
+
+            openModal('receipt-modal');
+        }
+
+        // ==================== 5. SETTINGS & BACKUP ====================
+        function loadSettingsUI() {
+            document.getElementById('set-house-name').value = appData.settings.houseName || '';
+            document.getElementById('set-house-address').value = appData.settings.houseAddress || '';
+            document.getElementById('set-unit-rate').value = appData.settings.unitRate || 10;
+        }
+
+        function saveHouseSettings() {
+            appData.settings.houseName = document.getElementById('set-house-name').value.trim();
+            appData.settings.houseAddress = document.getElementById('set-house-address').value.trim();
+            appData.settings.unitRate = parseFloat(document.getElementById('set-unit-rate').value) || 10;
+            saveAppData();
+            renderUnitsGrid();
+            showToast('সেটিংস সেভ করা হয়েছে!');
+        }
+
+        function exportJSONBackup() {
+            const blob = new Blob([JSON.stringify(appData, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `BariVara_30Units_Backup_${new Date().toISOString().slice(0, 10)}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+            showToast('ব্যাকআপ ফাইল ডাউনলোড হয়েছে!');
+        }
+
+        function importJSONBackup(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(ev) {
+                try {
+                    const parsed = JSON.parse(ev.target.result);
+                    if (parsed && Array.isArray(parsed.units)) {
+                        appData = parsed;
+                        saveAppData();
+                        renderUnitsGrid();
+                        showToast('সব ডাটা ও ছবি সফলভাবে রিস্টোর হয়েছে!');
+                    } else {
+                        showToast('ভুল ব্যাকআপ ফাইল!', 'error');
+                    }
+                } catch (err) {
+                    showToast('ফাইল পড়া সম্ভব হয়নি।', 'error');
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        function exportBillsCSV() {
+            if (appData.bills.length === 0) {
+                showToast('এক্সপোর্ট করার মতো কোনো বিল নেই।', 'error');
+                return;
+            }
+            const headers = ['Month', 'Unit', 'Tenant', 'Prev Meter', 'Curr Meter', 'Units', 'Base Rent', 'Elec Bill', 'Other', 'Prev Due', 'Total', 'Paid', 'Due', 'Method', 'Date'];
+            const rows = appData.bills.map(b => {
+                const u = appData.units.find(item => item.id === b.unitId) || { name: '-' };
+                const t = appData.tenants.find(item => item.id === b.tenantId) || { name: '-' };
+                return [b.month, `"${u.name}"`, `"${t.name}"`, b.prevReading, b.currReading, b.consumedUnits, b.baseRent, b.elecBill, b.otherCharge, b.prevDue, b.totalPayable, b.paidAmount, b.dueAmount, b.payMethod, b.payDate].join(',');
+            });
+            const csv = '\uFEFF' + [headers.join(','), ...rows].join('\n');
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `BariVara_Hisab_${new Date().toISOString().slice(0, 10)}.csv`;
+            a.click();
+            URL.revokeObjectURL(url);
+            showToast('Excel/CSV রিপোর্ট ডাউনলোড হয়েছে!');
+        }
+
+        function resetAllToDefault() {
+            showConfirm('সব ডাটা রিসেট করবেন?', 'সব ভাড়াটিয়া ও বিলের হিসাব মুছে ২৮টি রুম ও ২টি দোকান আবার খালি হয়ে যাবে।', () => {
+                localStorage.removeItem(STORAGE_KEY);
+                appData.units = generateDefault30Units();
+                appData.tenants = [];
+                appData.bills = [];
+                saveAppData();
+                renderUnitsGrid();
+                showToast('সব ইউনিট খালি ও রিসেট করা হয়েছে।');
+            });
+        }
+
+        function showConfirm(title, msg, onYes) {
+            document.getElementById('confirm-title').textContent = title;
+            document.getElementById('confirm-message').textContent = msg;
+            document.getElementById('confirm-yes-btn').onclick = () => {
+                closeModal('confirm-modal');
+                onYes();
+            };
+            openModal('confirm-modal');
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            loadAppData();
+            window.appData = appData;
+            renderUnitsGrid();
+        });
+    </script>
+</body>
+</html>
